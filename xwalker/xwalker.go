@@ -66,6 +66,8 @@ func LoginFromCookiesFile() (*XWalker, error) {
 	if err != nil {
 		return nil, err
 	}
+	page.SetDefaultTimeout(0) // Disable timeout for page operations
+	// goto page and check if logged in
 	return &XWalker{
 		Playwright: pw,
 		Page:       page,
@@ -89,10 +91,13 @@ func LoginX(email, pass, user string) (*XWalker, error) {
 	if err != nil {
 		return nil, err
 	}
+	context.SetDefaultTimeout(0)
+
 	page, err := context.NewPage()
 	if err != nil {
 		return nil, err
 	}
+	page.SetDefaultTimeout(0) // Disable timeout for page operations
 	_, err = page.Goto("https://x.com/i/flow/login")
 	if err != nil {
 		return nil, err
@@ -175,6 +180,12 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		time.Sleep(time.Duration(rand.Intn(340)) * time.Millisecond) // Wait for the unfollow action to complete
 		// Click the "Unfollow" button in the confirmation dialog
+		// Check if has text "Unfollow"
+		if unfollowButtons, err := x.Page.QuerySelectorAll("button:has-text('Unfollow')"); err != nil {
+			return err
+		} else if len(unfollowButtons) == 0 {
+			return nil // No "Unfollow" button found, maybe already unfollowed
+		}
 		if err := x.Page.Click("button:has-text('Unfollow')"); err != nil {
 			return err
 		}
@@ -211,6 +222,7 @@ func (x *XWalker) StoreCookiesToFile() error {
 }
 
 func (x *XWalker) RefuseAllCookies() {
+	x.Page.Goto("https://x.com")
 	// Click the "Refuse" button for cookies if it exists
 	if err := x.Page.Click("button:has-text('Refuse non-essential cookies')"); err != nil {
 	}
