@@ -3,6 +3,7 @@ package xwalker
 import (
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -224,7 +225,48 @@ func (x *XWalker) StoreCookiesToFile() error {
 func (x *XWalker) RefuseAllCookies() {
 	x.Page.Goto("https://x.com")
 	// Click the "Refuse" button for cookies if it exists
+	ls, err := x.Page.Locator("button:has-text('Refuse non-essential cookies')").All()
+	if err != nil {
+		fmt.Println("Error finding cookie refusal button:", err)
+		return
+	}
+	if len(ls) == 0 {
+		fmt.Println("No cookie refusal button found, maybe already refused or not present")
+		return
+	}
+	fmt.Println("Refusing non-essential cookies")
 	if err := x.Page.Click("button:has-text('Refuse non-essential cookies')"); err != nil {
 	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the action to complete
+}
+
+func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
+	q := url.QueryEscape(hash) // Ensure the hashtag is URL-encoded
+	_, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=hashtag_click&f=user", q))
+	if err != nil {
+		return err
+	}
+
+	// Wait for the page to load and display the users
+	if _, err := x.Page.WaitForSelector("button:has-text('Follow')"); err != nil {
+		return err
+	}
+
+	// Find all "Follow" buttons
+	buttons, err := x.Page.QuerySelectorAll("button:has-text('Follow')")
+	if err != nil {
+		return err
+	}
+
+	// Follow the first n users
+	for i := 0; i < n && i < len(buttons); i++ {
+		fmt.Println("Following user", i+1)
+		// Click the "Follow" button
+		if err := buttons[i].Click(); err != nil {
+			return err
+		}
+		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the follow action to complete
+	}
+
+	return nil
 }
