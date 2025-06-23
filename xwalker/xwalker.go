@@ -93,30 +93,37 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		return err
 	}
 
+	// Wait for the followers list to load
+	if _, err := x.Page.WaitForSelector("button:has-text('Following')"); err != nil {
+		return err
+	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
 
 	// Unsubscribe from the first n followers
 	for i := 0; i < n; i++ {
 		fmt.Println("Unsubscribing from follower", i+1)
-		// select the "follow" button like with the Tab key
-		if err := x.Page.Hover("button:has-text('Following')"); err != nil {
+		// system press keyboard
+		// find second button with thex Following text
+		buttons, err := x.Page.QuerySelectorAll("button:has-text('Following')")
+		if err != nil {
 			return err
 		}
-
-		time.Sleep(time.Duration(rand.Intn(150)) * time.Millisecond) // Wait for the unfollow action to be ready
-
-		// Click the "Unfollow" button
-		// Add a random delay to avoid detection
-		if err := x.Page.Click("button:has-text('Unfollow')"); err != nil {
+		if len(buttons) < 2 {
+			return fmt.Errorf("not enough buttons found")
+		}
+		// Click the second "Following" button
+		if err := buttons[1].Click(); err != nil {
 			return err
 		}
 		time.Sleep(time.Duration(rand.Intn(340)) * time.Millisecond) // Wait for the unfollow action to complete
+		// Click the "Unfollow" button in the confirmation dialog
 		if err := x.Page.Click("button:has-text('Unfollow')"); err != nil {
 			return err
 		}
-
-		time.Sleep(time.Duration(rand.Intn(450)) * time.Millisecond) // Wait for the unfollow confirmation
+		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 	}
 
 	return nil
 }
+
+// TODO: handle if at some point the page changes, restart the process few times - then notify me
