@@ -225,3 +225,20 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 
 	return followers, following, nil
 }
+
+// follow users from a tag,
+// if there is no users to follow, open a random user from the tag, then open their followers page
+// and then do the same thing
+func (x *XWalker) FollowFromTag(n int, tag string) error {
+	if n <= 0 {
+		return fmt.Errorf("number of users to follow must be greater than 0")
+	}
+
+	fmt.Println("Following", n, "users from tag:", tag)
+	if _, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=typed_query&f=user", url.QueryEscape(tag))); err != nil {
+		return eris.Wrap(err, "failed to go to tag page")
+	}
+
+	// WIP:
+	return nil
+}

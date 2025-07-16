@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/Armatorix/xBot/xwalker"
 	"github.com/caarlos0/env/v11"
@@ -47,15 +48,28 @@ func main() {
 		fmt.Println("Error getting followers and following:", err)
 		return
 	}
+	now := time.Now()
 
-	toUnsub := max(0, following-followers+(rand.Intn(200)*followers/1000))
-	if followers < 100 {
-		toUnsub = 0
+	if now.Hour() == cfg.MassUnsubHour {
+		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100))
+		if followers < 100 {
+			toUnsub = 0
+		}
+		fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
+
+		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
+			fmt.Println("Error opening followers page and unsubscribing:", err)
+		}
 	}
-	fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
 
-	if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
-		fmt.Println("Error opening followers page and unsubscribing:", err)
+	if now.Hour() >= cfg.SubFromHour && now.Hour() <= cfg.SubToHour {
+		toFollow := 8 + rand.Intn(14)
+
+		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
+		if err != nil {
+			fmt.Println("Error following from tag:", err)
+			return
+		}
 	}
 
 	err = xd.StoreCookiesToFile()
