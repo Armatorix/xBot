@@ -230,6 +230,7 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 // if there is no users to follow, open a random user from the tag, then open their followers page
 // and then do the same thing
 func (x *XWalker) FollowFromTag(n int, tag string) error {
+	totalFollowed := 0
 	if n <= 0 {
 		return fmt.Errorf("number of users to follow must be greater than 0")
 	}
@@ -239,6 +240,73 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 		return eris.Wrap(err, "failed to go to tag page")
 	}
 
-	// WIP:
+	// Wait for the page to load and display the users
+	if _, err := x.Page.WaitForSelector("span:has-text('Użytkownicy')"); err != nil {
+		return eris.Wrap(err, "failed to wait for users to load on tag page")
+	}
+
+	for totalFollowed < n {
+		time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+
+		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwuj')")
+		if err != nil {
+			return eris.Wrap(err, "failed to query 'Follow' buttons")
+		}
+		for range 5 {
+			if len(buttons) != 0 {
+				break
+			}
+
+			fmt.Println("No 'Follow' buttons found, trying to scroll down")
+			if err := x.scrollDownX(1800); err != nil {
+				return eris.Wrap(err, "failed to scroll down to find more 'Follow' buttons")
+			}
+			// Open a random user from the tag
+
+			buttons, err = x.Page.QuerySelectorAll("button:has-text('Obserwuj')")
+			if err != nil {
+				return eris.Wrap(err, "failed to query 'Follow' buttons")
+			}
+		}
+
+		if len(buttons) == 0 {
+			fmt.Println("Still no 'Follow' buttons found, maybe already followed or not present")
+			// open random user from the tag - find buttons with data-testid="UserCell"
+			userCells, err := x.Page.QuerySelectorAll("button[data-testid='UserCell']")
+			if err != nil {
+				return eris.Wrap(err, "failed to query user cells")
+			}
+			// click random user cell
+			if len(userCells) == 0 {
+				return fmt.Errorf("no user cells found on the tag page")
+			}
+			if err := userCells[rand.Intn(len(userCells))].Click(); err != nil {
+				return eris.Wrap(err, "failed to click on a random user cell")
+			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+			buttons, err = x.Page.QuerySelectorAll("button:has-text('Obserwujących')")
+			if err != nil {
+				return eris.Wrap(err, "failed to query 'Followers' buttons")
+			}
+			if len(buttons) == 0 {
+				return fmt.Errorf("no 'Followers' buttons found on the user page")
+			}
+			// Click on the first 'Followers' button
+			if err := buttons[0].Click(); err != nil {
+				return eris.Wrap(err, "failed to click on 'Followers' button")
+			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+			continue
+		}
+
+		// Click the first "Follow" button
+		if err := buttons[rand.Intn(len(buttons))].Click(); err != nil {
+			return eris.Wrap(err, "failed to click 'Follow' button")
+		}
+
+		totalFollowed++
+		fmt.Println("Followed", totalFollowed, "users from tag:", tag)
+	}
+
 	return nil
 }

@@ -32,6 +32,15 @@ func (x *XWalker) openProfilePage() error {
 	return nil
 }
 
+func (x *XWalker) scrollDownX(v int) error {
+	if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight+" + strconv.Itoa(rand.Intn(100)+v) + ")"); err != nil {
+		return eris.Wrap(err, "failed to scroll down the page")
+	}
+	time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+	fmt.Println("Scrolled down successfully")
+	return nil
+}
+
 func (x *XWalker) openFollowingPage() error {
 	// Navigate to the followers page
 	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
