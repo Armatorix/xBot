@@ -48,7 +48,7 @@ deploy-systemd-config:
 .PHONY: deploy-binary
 deploy-binary:
 	@echo "Deploying xBot binary to ${SSHADDR}..."
-	@ssh ${SSHADDR} "rm -rf ${APP_PATH}/xbot || true"
+	@ssh ${SSHADDR} "rm -f ${APP_PATH}/xbot || true"
 	@scp ./bin/xbot ${SSHADDR}:${APP_PATH}/xbot
 	@ssh ${SSHADDR} "chmod +x ${APP_PATH}/xbot"
 
