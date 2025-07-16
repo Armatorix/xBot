@@ -44,7 +44,9 @@ func main() {
 	xd.RefuseAllCookies()
 
 	// xd.FollowUnfollowedFromHash("#pociągPrawych", 20)
-	xd.OpenFollowersPageAndUnsubN(50)
+	if err = xd.OpenFollowersPageAndUnsubN(2400); err != nil {
+		fmt.Println("Error opening followers page and unsubscribing:", err)
+	}
 	err = xd.StoreCookiesToFile()
 	if err != nil {
 		panic(err)
