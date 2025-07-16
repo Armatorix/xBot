@@ -1,5 +1,5 @@
-XBOT_USERNAME=polski_wojt
-# XBOT_USERNAME=Armatorix
+# XBOT_USERNAME=polski_wojt
+XBOT_USERNAME=Armatorix
 SSHADDR=ax@hephaestus
 SHELL:=/bin/bash
 BOT_NAME=xbot-worker-${XBOT_USERNAME}
