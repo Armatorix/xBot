@@ -10,9 +10,13 @@ import (
 )
 
 type Config struct {
-	Email    string `env:"EMAIL"`
-	Password string `env:"PASSWORD"`
-	User     string `env:"USERNAME"`
+	Email         string   `env:"EMAIL"`
+	Password      string   `env:"PASSWORD"`
+	User          string   `env:"USERNAME"`
+	Tags          []string `env:"TAGS"`
+	SubFromHour   int      `env:"SUB_FROM_HOUR"`
+	SubToHour     int      `env:"SUB_TO_HOUR"`
+	MassUnsubHour int      `env:"MASS_UNSUB_HOUR"`
 }
 
 func main() {
@@ -22,21 +26,15 @@ func main() {
 		fmt.Printf("Error parsing environment variables: %v\n", err)
 		return
 	}
-	playwright.Install()
-	xd, err := xwalker.LoginFromCookiesFile(cfg.User)
+	err = playwright.Install()
 	if err != nil {
-		fmt.Println("No cookies file found, logging in with credentials", err)
+		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
-	if xd == nil {
-		xd, err = xwalker.LoginX(cfg.Email, cfg.Password, cfg.User)
-		if err != nil {
-			panic(err)
-		}
 
-		err = xd.StoreCookiesToFile()
-		if err != nil {
-			panic(err)
-		}
+	xd, err := xwalker.LoadOrLoginX(cfg.Email, cfg.Password, cfg.User)
+	if err != nil {
+		fmt.Printf("Error loading or logging in to xwalker: %v\n", err)
+		return
 	}
 
 	defer xd.Playwright.Stop()

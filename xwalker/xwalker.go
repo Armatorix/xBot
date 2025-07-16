@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,146 +18,9 @@ type XWalker struct {
 	Username   string
 }
 
-func LoginFromCookiesFile(username string) (*XWalker, error) {
-	f, err := os.ReadFile(username + "_cookies.txt")
-	if err != nil {
-		return nil, err
-	}
-
-	cookiez := strings.Split(string(f), "; ")
-	if len(cookiez) == 0 || (len(cookiez) == 1 && cookiez[0] == "") {
-		return nil, fmt.Errorf("no cookies found in file")
-	}
-
-	var cookies []playwright.OptionalCookie
-	for _, cookie := range cookiez {
-		if cookie == "" {
-			continue // Skip empty cookies
-		}
-		parts := strings.SplitN(cookie, "=", 2)
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid cookie format: %s", cookie)
-		}
-		name := parts[0]
-		value := parts[1]
-		cookies = append(cookies, playwright.OptionalCookie{
-			Name:  name,
-			Value: value,
-			URL:   playwright.String("https://x.com"), // Optional: specify the domain if needed
-		})
-	}
-	pw, err := playwright.Run()
-	if err != nil {
-		return nil, err
-	}
-	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
-		Timeout:  playwright.Float(0), // Set a timeout for launching the browser
-	})
-	if err != nil {
-		return nil, err
-	}
-	context, err := browser.NewContext(playwright.BrowserNewContextOptions{
-		StorageState: &playwright.OptionalStorageState{
-			Cookies: cookies,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	page, err := context.NewPage()
-	if err != nil {
-		return nil, err
-	}
-	page.SetDefaultTimeout(0) // Disable timeout for page operations
-	// goto page and check if logged in
-	return &XWalker{
-		Username:   username,
-		Playwright: pw,
-		Page:       page,
-	}, nil
-}
-
-func LoginX(email, pass, user string) (*XWalker, error) {
-	pw, err := playwright.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	context, err := browser.NewContext()
-	if err != nil {
-		return nil, err
-	}
-	context.SetDefaultTimeout(0)
-
-	page, err := context.NewPage()
-	if err != nil {
-		return nil, err
-	}
-	page.SetDefaultTimeout(0) // Disable timeout for page operations
-	_, err = page.Goto("https://x.com/i/flow/login")
-	if err != nil {
-		return nil, err
-	}
-	// wait for the form to load
-	if _, err = page.WaitForSelector("input[autocomplete='username']"); err != nil {
-		return nil, err
-	}
-	// Fill in the username and password fields
-	if err := page.Fill("input[autocomplete='username']", email); err != nil {
-		return nil, err
-	}
-
-	// button with text "Next"
-	if err := page.Click("button:has-text('Next')"); err != nil {
-		return nil, err
-	}
-
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the next page to load
-	// check page contains "There was unusual login activity on your account."
-	if cont, _ := page.Content(); strings.Contains(cont, "There was unusual login activity on your account.") {
-		// fill username again
-		if err := page.Fill("input", user); err != nil {
-			return nil, eris.Wrap(err, "failed to fill username field after unusual login activity")
-		}
-		// click button with text "Next"
-		if err := page.Click("button:has-text('Next')"); err != nil {
-			return nil, eris.Wrap(err, "failed to click 'Next' button after unusual login activity")
-		}
-		time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond)
-	}
-	// Wait for the password field to appear
-	if _, err = page.WaitForSelector("input[name='password']"); err != nil {
-		return nil, eris.Wrap(err, "failed to find password input field")
-	}
-
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the next page to load
-	if err := page.Fill("input[name='password']", pass); err != nil {
-		return nil, eris.Wrap(err, "failed to fill password field")
-	}
-
-	// button with text "Log in"
-	if err := page.Click("button:has-text('Log in')"); err != nil {
-		return nil, eris.Wrap(err, "failed to click 'Log in' button")
-	}
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the login to complete
-	return &XWalker{
-		Playwright: pw,
-		Page:       page,
-		Username:   user,
-	}, nil
-}
-
 func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	// Navigate to the followers page
-	if err := x.OpenFollowersPage(); err != nil {
+	if err := x.openFollowingPage(); err != nil {
 		fmt.Println("Error opening followers page:", err)
 		return eris.Wrap(err, "failed to open followers page")
 	}
@@ -175,7 +37,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		if len(buttons) < 2 {
 			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
-			if err := x.OpenFollowersPage(); err != nil {
+			if err := x.openFollowingPage(); err != nil {
 				fmt.Println("Error reopening followers page:", err)
 				return eris.Wrap(err, "failed to reopen followers page after not finding 'Obserwujesz' buttons")
 			}
@@ -193,7 +55,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 			return eris.Wrap(err, "failed to query 'Przestań obserwować' buttons")
 		} else if len(unfollowButtons) == 0 {
 			fmt.Println("No 'Przestań obserwować' button found, maybe already unsubscribed or not present")
-			if err := x.RefreshPage(); err != nil {
+			if err := x.refreshPage(); err != nil {
 				return eris.Wrap(err, "failed to refresh page after not finding 'Przestań obserwować' button")
 			}
 			i--
@@ -225,7 +87,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 				}
 				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
 				// if page is not followers page, go to the followers page again
-				if err := x.OpenFollowersPage(); err != nil {
+				if err := x.openFollowingPage(); err != nil {
 					fmt.Println("Error reopening followers page:", err)
 					return eris.Wrap(err, "failed to reopen followers page after clicking a random link")
 				}
@@ -234,75 +96,6 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 
 	}
 
-	return nil
-}
-
-func (x *XWalker) RefreshPage() error {
-	if _, err := x.Page.Reload(); err != nil {
-		return err
-	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
-	// Wait for the page to reload
-	if err := x.Page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
-		State: playwright.LoadStateDomcontentloaded,
-	}); err != nil {
-		return eris.Wrap(err, "failed to wait for page to reload after refreshing")
-	}
-	fmt.Println("Page reloaded successfully")
-	return nil
-}
-
-func (x *XWalker) OpenFollowersPage() error {
-	// Navigate to the followers page
-	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
-		return eris.Wrap(err, "failed to go to followers page")
-	}
-
-	// Wait for the followers list to load
-	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
-		return eris.Wrap(err, "failed to wait for followers list to load")
-	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the page to load
-
-	return nil
-}
-
-func (x *XWalker) OpenProfilePage() error {
-	if _, err := x.Page.Goto("https://x.com/" + x.Username); err != nil {
-		return eris.Wrap(err, "failed to go to profile page")
-	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
-	// Check if the page is loaded by looking for the profile header
-	if _, err := x.Page.WaitForSelector("div:has-text('" + x.Username + "')"); err != nil {
-		return fmt.Errorf("profile page did not load correctly: %w", err)
-	}
-	fmt.Println("Profile page opened successfully")
-	return nil
-}
-
-// TODO: handle if at some point the page changes, restart the process few times - then notify me
-
-func (x *XWalker) StoreCookiesToFile() error {
-	cookies, err := x.Page.Context().Cookies()
-	if err != nil {
-		return err
-	}
-
-	// Convert cookies to a string format or save them to a file
-	cookieData := ""
-	for _, cookie := range cookies {
-		cookieData += fmt.Sprintf("%s=%s; ", cookie.Name, cookie.Value)
-	}
-
-	f, err := os.Create(x.Username + "_cookies.txt")
-	if err != nil {
-		return fmt.Errorf("failed to create cookies file: %w", err)
-	}
-	defer f.Close()
-	_, err = f.WriteString(cookieData)
-	if err != nil {
-		return fmt.Errorf("failed to write cookies to file: %w", err)
-	}
 	return nil
 }
 
@@ -373,7 +166,7 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 
 func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	// Navigate to the followers page
-	if err := x.OpenProfilePage(); err != nil {
+	if err := x.openProfilePage(); err != nil {
 		return 0, 0, fmt.Errorf("error opening followers page: %w", err)
 	}
 
@@ -431,13 +224,4 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	}
 
 	return followers, following, nil
-}
-
-func (x *XWalker) scrollDown() error {
-	if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight+" + strconv.Itoa(rand.Intn(400)) + ")"); err != nil {
-		return eris.Wrap(err, "failed to scroll down the page")
-	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(100))*time.Millisecond)
-	fmt.Println("Scrolled down successfully")
-	return nil
 }
