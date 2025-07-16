@@ -202,12 +202,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 
-		// randomly refresh page
-		if rand.Intn(40) < 2 { // 2.5% chance to refresh
-			if err = x.RefreshPage(); err != nil {
-				return err
-			}
-		} else if rand.Intn(20) < 2 { // 10% chance to scroll down
+		if rand.Intn(20) < 2 { // 10% chance to scroll down
 			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
 				return err
 			}
