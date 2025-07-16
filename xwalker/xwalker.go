@@ -169,6 +169,22 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	// Unsubscribe from the first n followers
 	for i := 0; i < n; i++ {
 		fmt.Println("Unsubscribing from follower", i+1)
+
+		// randomly refresh page
+		if rand.Intn(40) < 2 { // 2.5% chance to refresh
+			if _, err := x.Page.Reload(); err != nil {
+				return err
+			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to reload
+		}
+
+		if rand.Intn(20) < 2 { // 10% chance to scroll down
+			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
+				return err
+			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the scroll to complete
+		}
+
 		// system press keyboard
 		// find second button with thex Obserwujesz text
 		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwujesz')")
@@ -176,7 +192,9 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 			return err
 		}
 		if len(buttons) < 2 {
-			return fmt.Errorf("not enough buttons found")
+			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed from all")
+			i--
+			continue
 		}
 		// Click the second "Obserwujesz" button
 		if err := buttons[1].Click(); err != nil {
@@ -194,21 +212,6 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 			return err
 		}
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
-
-		// randomly refresh page
-		if rand.Intn(40) < 2 { // 2.5% chance to refresh
-			if _, err := x.Page.Reload(); err != nil {
-				return err
-			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to reload
-		}
-
-		if rand.Intn(20) < 2 { // 10% chance to scroll down
-			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
-				return err
-			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the scroll to complete
-		}
 
 		if rand.Intn(20) < 2 { // 10% chance to click on a random link
 			links, err := x.Page.QuerySelectorAll("a")
