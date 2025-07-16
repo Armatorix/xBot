@@ -156,15 +156,10 @@ func LoginX(email, pass, user string) (*XWalker, error) {
 
 func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	// Navigate to the followers page
-	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
+	if err := x.OpenFollowersPage(); err != nil {
+		fmt.Println("Error opening followers page:", err)
 		return err
 	}
-
-	// Wait for the followers list to load
-	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
-		return err
-	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
 
 	// Unsubscribe from the first n followers
 	for i := 0; i < n; i++ {
@@ -232,6 +227,11 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 					return err
 				}
 				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+				// if page is not followers page, go to the followers page again
+				if err := x.OpenFollowersPage(); err != nil {
+					fmt.Println("Error reopening followers page:", err)
+					return err
+				}
 			}
 		}
 
@@ -252,6 +252,21 @@ func (x *XWalker) RefreshPage() error {
 		return err
 	}
 	fmt.Println("Page reloaded successfully")
+	return nil
+}
+
+func (x *XWalker) OpenFollowersPage() error {
+	// Navigate to the followers page
+	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
+		return err
+	}
+
+	// Wait for the followers list to load
+	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
+		return err
+	}
+	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the page to load
+
 	return nil
 }
 
