@@ -10,3 +10,7 @@ build:
 	@echo "Building xBot..."
 	@mkdir -p bin
 	@go build -o ./bin/xbot  .
+
+.PHONY: worker
+worker:
+	@echo "Deploying xBot worker..."
