@@ -11,6 +11,10 @@ import (
 	"github.com/rotisserie/eris"
 )
 
+var (
+	headless = true // Set to false if you want to see the browser actions
+)
+
 func loginFromCookiesFile(username string) (*XWalker, error) {
 	f, err := os.ReadFile(username + "_cookies.txt")
 	if err != nil {
@@ -44,7 +48,7 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 		return nil, eris.Wrap(err, "failed to start Playwright")
 	}
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
+		Headless: playwright.Bool(headless),
 		Timeout:  playwright.Float(0), // Set a timeout for launching the browser
 	})
 	if err != nil {
@@ -98,7 +102,7 @@ func loginX(email, pass, user string) (*XWalker, error) {
 	}
 
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(true),
+		Headless: playwright.Bool(headless),
 	})
 	if err != nil {
 		return nil, err

@@ -21,6 +21,11 @@ type Config struct {
 }
 
 func main() {
+	now := time.Now()
+	if now.Hour() < 6 || now.Hour() > 23 {
+		fmt.Println("xBot is not allowed to run at this hour. Please try again later.")
+		return
+	}
 	var cfg Config
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -32,7 +37,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	initSleep := time.Duration(rand.Intn(15)+1) * time.Minute
+	initSleep := time.Duration(rand.Intn(1)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
 	time.Sleep(initSleep)
 	fmt.Println("xBot started")
@@ -54,7 +59,6 @@ func main() {
 		fmt.Println("Error getting followers and following:", err)
 		return
 	}
-	now := time.Now()
 
 	if now.Hour() == cfg.MassUnsubHour {
 		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100))
