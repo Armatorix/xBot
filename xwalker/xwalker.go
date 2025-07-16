@@ -252,20 +252,37 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 		return err
 	}
 
+	totalFollowed := 0
+	queryAttempts := 0
 	// Find all "Follow" buttons
-	buttons, err := x.Page.QuerySelectorAll("button:has-text('Follow')")
-	if err != nil {
-		return err
-	}
-
 	// Follow the first n users
-	for i := 0; i < n && i < len(buttons); i++ {
-		fmt.Println("Following user", i+1)
-		// Click the "Follow" button
-		if err := buttons[i].Click(); err != nil {
+	for {
+		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the follow action to complete
+		buttons, err := x.Page.QuerySelectorAll("button:has-text('Follow')")
+		if err != nil {
 			return err
 		}
-		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the follow action to complete
+		if len(buttons) == 0 {
+			// scroll to the bottom of the page to load more users
+			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
+				return err
+			}
+			queryAttempts++
+			if queryAttempts > 5 {
+				return nil
+			}
+			continue
+		}
+
+		// Click the first "Follow" button
+		if err := buttons[0].Click(); err != nil {
+			return err
+		}
+
+		totalFollowed++
+		if totalFollowed >= n {
+			break // Stop if we've followed enough users
+		}
 	}
 
 	return nil
