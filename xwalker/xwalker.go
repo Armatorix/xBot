@@ -273,7 +273,7 @@ func (x *XWalker) OpenProfilePage() error {
 	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
 	// Check if the page is loaded by looking for the profile header
-	if _, err := x.Page.WaitForSelector("h1:has-text('" + x.Username + "')"); err != nil {
+	if _, err := x.Page.WaitForSelector("div:has-text('" + x.Username + "')"); err != nil {
 		return fmt.Errorf("profile page did not load correctly: %w", err)
 	}
 	fmt.Println("Profile page opened successfully")
@@ -379,15 +379,25 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	}
 
 	// find <a> to /{username}/following
+	fmt.Println("Finding following and followers counts for user:", x.Username)
 	followingLink, err := x.Page.QuerySelector("a[href='/" + x.Username + "/following']")
 	if err != nil {
 		return 0, 0, fmt.Errorf("error finding following link: %w", err)
 	}
+
 	// Get the text content of the following link
+	fmt.Println("Getting following count for user:", x.Username)
 	followingText, err := followingLink.TextContent()
 	if err != nil {
 		return 0, 0, fmt.Errorf("error getting following text: %w", err)
 	}
+	// remove uunicode characters
+	followingText = strings.Map(func(r rune) rune {
+		if r == '\u00A0' {
+			return -1 // Remove these characters
+		}
+		return r
+	}, followingText)
 	// Extract the number of following from the text
 	parts := strings.Split(followingText, " ")
 	if len(parts) != 2 {
@@ -400,6 +410,7 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	}
 
 	// find <a> to /{username}/verified_followers
+	fmt.Println("Finding followers count for user:", x.Username)
 	followersLink, err := x.Page.QuerySelector("a[href='/" + x.Username + "/verified_followers']")
 	if err != nil {
 		return 0, 0, fmt.Errorf("error finding followers link: %w", err)

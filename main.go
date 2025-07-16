@@ -50,7 +50,7 @@ func main() {
 		return
 	}
 
-	toUnsub := min(0, followers-following+rand.Intn(100)*following/10)
+	toUnsub := min(0, following-followers+rand.Intn(100)*followers/10)
 	fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
 
 	if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
