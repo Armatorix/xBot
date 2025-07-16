@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/playwright-community/playwright-go"
+	"github.com/rotisserie/eris"
 )
 
 type XWalker struct {
@@ -125,27 +126,27 @@ func LoginX(email, pass, user string) (*XWalker, error) {
 	if cont, _ := page.Content(); strings.Contains(cont, "There was unusual login activity on your account.") {
 		// fill username again
 		if err := page.Fill("input", user); err != nil {
-			return nil, err
+			return nil, eris.Wrap(err, "failed to fill username field after unusual login activity")
 		}
 		// click button with text "Next"
 		if err := page.Click("button:has-text('Next')"); err != nil {
-			return nil, err
+			return nil, eris.Wrap(err, "failed to click 'Next' button after unusual login activity")
 		}
 		time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond)
 	}
 	// Wait for the password field to appear
 	if _, err = page.WaitForSelector("input[name='password']"); err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to find password input field")
 	}
 
 	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the next page to load
 	if err := page.Fill("input[name='password']", pass); err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to fill password field")
 	}
 
 	// button with text "Log in"
 	if err := page.Click("button:has-text('Log in')"); err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to click 'Log in' button")
 	}
 	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the login to complete
 	return &XWalker{
@@ -159,7 +160,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	// Navigate to the followers page
 	if err := x.OpenFollowersPage(); err != nil {
 		fmt.Println("Error opening followers page:", err)
-		return err
+		return eris.Wrap(err, "failed to open followers page")
 	}
 
 	// Unsubscribe from the first n followers
@@ -170,63 +171,63 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		// find second button with thex Obserwujesz text
 		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwujesz')")
 		if err != nil {
-			return err
+			return eris.Wrap(err, "failed to query 'Obserwujesz' buttons")
 		}
 		if len(buttons) < 2 {
 			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
 			if err := x.OpenFollowersPage(); err != nil {
 				fmt.Println("Error reopening followers page:", err)
-				return err
+				return eris.Wrap(err, "failed to reopen followers page after not finding 'Obserwujesz' buttons")
 			}
 			i--
 			continue
 		}
 		// Click the second "Obserwujesz" button
 		if err := buttons[1].Click(); err != nil {
-			return err
+			return eris.Wrap(err, "failed to click 'Obserwujesz' button")
 		}
 		time.Sleep(time.Second*1 + time.Duration(rand.Intn(340))*time.Millisecond) // Wait for the unfollow action to complete
 		// Click the "Przestań obserwować" button in the confirmation dialog
 		// Check if has text "Przestań obserwować"
 		if unfollowButtons, err := x.Page.QuerySelectorAll("button:has-text('Przestań obserwować')"); err != nil {
-			return err
+			return eris.Wrap(err, "failed to query 'Przestań obserwować' buttons")
 		} else if len(unfollowButtons) == 0 {
 			fmt.Println("No 'Przestań obserwować' button found, maybe already unsubscribed or not present")
 			if err := x.RefreshPage(); err != nil {
-				return err
+				return eris.Wrap(err, "failed to refresh page after not finding 'Przestań obserwować' button")
 			}
 			i--
 			continue
 		}
 		if err := x.Page.Click("button:has-text('Przestań obserwować')"); err != nil {
-			return err
+			return eris.Wrap(err, "failed to click 'Przestań obserwować' button")
 		}
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 
 		if rand.Intn(20) < 2 { // 10% chance to scroll down
 			if err := x.scrollDown(); err != nil {
-				return err
+				return eris.Wrap(err, "failed to scroll down after unsubscribing")
 			}
 		} else if rand.Intn(20) < 2 { // 10% chance to click on a random link
 			links, err := x.Page.QuerySelectorAll("a")
 			if err != nil {
-				return err
+				return eris.Wrap(err, "failed to query all links on the page")
 			}
 			if len(links) > 0 {
 				randomIndex := rand.Intn(len(links))
 				if err := links[randomIndex].Click(); err != nil {
-					return err
+					return eris.Wrap(err, "failed to click on a random link")
 				}
 				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the click to complete
 				// Go back to the followers page
 				if _, err := x.Page.GoBack(); err != nil {
-					return err
+					return eris.Wrap(err, "failed to go back after clicking a random link")
 				}
 				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
 				// if page is not followers page, go to the followers page again
 				if err := x.OpenFollowersPage(); err != nil {
 					fmt.Println("Error reopening followers page:", err)
-					return err
+					return eris.Wrap(err, "failed to reopen followers page after clicking a random link")
 				}
 			}
 		}
@@ -245,7 +246,7 @@ func (x *XWalker) RefreshPage() error {
 	if err := x.Page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
 		State: playwright.LoadStateDomcontentloaded,
 	}); err != nil {
-		return err
+		return eris.Wrap(err, "failed to wait for page to reload after refreshing")
 	}
 	fmt.Println("Page reloaded successfully")
 	return nil
@@ -254,12 +255,12 @@ func (x *XWalker) RefreshPage() error {
 func (x *XWalker) OpenFollowersPage() error {
 	// Navigate to the followers page
 	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
-		return err
+		return eris.Wrap(err, "failed to go to followers page")
 	}
 
 	// Wait for the followers list to load
 	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
-		return err
+		return eris.Wrap(err, "failed to wait for followers list to load")
 	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the page to load
 
@@ -268,7 +269,7 @@ func (x *XWalker) OpenFollowersPage() error {
 
 func (x *XWalker) OpenProfilePage() error {
 	if _, err := x.Page.Goto("https://x.com/" + x.Username); err != nil {
-		return err
+		return eris.Wrap(err, "failed to go to profile page")
 	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
 	// Check if the page is loaded by looking for the profile header
@@ -295,12 +296,12 @@ func (x *XWalker) StoreCookiesToFile() error {
 
 	f, err := os.Create(x.Username + "_cookies.txt")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create cookies file: %w", err)
 	}
 	defer f.Close()
 	_, err = f.WriteString(cookieData)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write cookies to file: %w", err)
 	}
 	return nil
 }
@@ -327,12 +328,12 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 	q := url.QueryEscape(hash) // Ensure the hashtag is URL-encoded
 	_, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=hashtag_click&f=user", q))
 	if err != nil {
-		return err
+		return eris.Wrap(err, "failed to go to hashtag page")
 	}
 
 	// Wait for the page to load and display the users
 	if _, err := x.Page.WaitForSelector("button:has-text('Follow')"); err != nil {
-		return err
+		return eris.Wrap(err, "failed to wait for users to load on hashtag page")
 	}
 
 	totalFollowed := 0
@@ -343,22 +344,22 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the follow action to complete
 		buttons, err := x.Page.QuerySelectorAll("button:has-text('Follow')")
 		if err != nil {
-			return err
+			return eris.Wrap(err, "failed to query 'Follow' buttons")
 		}
 		if len(buttons) == 0 {
 			if err := x.scrollDown(); err != nil {
-				return err
+				return eris.Wrap(err, "failed to scroll down to find more 'Follow' buttons")
 			}
 			queryAttempts++
 			if queryAttempts > 5 {
-				return nil
+				return fmt.Errorf("no more 'Follow' buttons found after scrolling down multiple times")
 			}
 			continue
 		}
 
 		// Click the first "Follow" button
 		if err := buttons[0].Click(); err != nil {
-			return err
+			return eris.Wrap(err, "failed to click 'Follow' button")
 		}
 
 		totalFollowed++
@@ -434,7 +435,7 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 
 func (x *XWalker) scrollDown() error {
 	if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight+" + strconv.Itoa(rand.Intn(400)) + ")"); err != nil {
-		return err
+		return eris.Wrap(err, "failed to scroll down the page")
 	}
 	time.Sleep(time.Second + time.Duration(rand.Intn(100))*time.Millisecond)
 	fmt.Println("Scrolled down successfully")
