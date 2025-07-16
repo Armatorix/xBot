@@ -204,10 +204,9 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 
 		if rand.Intn(20) < 2 { // 10% chance to scroll down
-			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
+			if err := x.scrollDown(); err != nil {
 				return err
 			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the scroll to complete
 		} else if rand.Intn(20) < 2 { // 10% chance to click on a random link
 			links, err := x.Page.QuerySelectorAll("a")
 			if err != nil {
@@ -347,8 +346,7 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 			return err
 		}
 		if len(buttons) == 0 {
-			// scroll to the bottom of the page to load more users
-			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
+			if err := x.scrollDown(); err != nil {
 				return err
 			}
 			queryAttempts++
@@ -432,4 +430,13 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	}
 
 	return followers, following, nil
+}
+
+func (x *XWalker) scrollDown() error {
+	if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight+" + strconv.Itoa(rand.Intn(400)) + ")"); err != nil {
+		return err
+	}
+	time.Sleep(time.Second + time.Duration(rand.Intn(100))*time.Millisecond)
+	fmt.Println("Scrolled down successfully")
+	return nil
 }
