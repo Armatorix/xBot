@@ -236,7 +236,7 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 	}
 
 	fmt.Println("Following", n, "users from tag:", tag)
-	if _, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=typed_query&f=user", url.QueryEscape(tag))); err != nil {
+	if _, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=typed_query&f=user", url.QueryEscape("#"+tag))); err != nil {
 		return eris.Wrap(err, "failed to go to tag page")
 	}
 
@@ -248,7 +248,7 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 	for totalFollowed < n {
 		time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
 
-		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwuj')")
+		buttons, err := x.Page.QuerySelectorAll("button div span span:text-is('Obserwuj')")
 		if err != nil {
 			return eris.Wrap(err, "failed to query 'Follow' buttons")
 		}
@@ -263,7 +263,7 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 			}
 			// Open a random user from the tag
 
-			buttons, err = x.Page.QuerySelectorAll("button:has-text('Obserwuj')")
+			buttons, err = x.Page.QuerySelectorAll("button:text-is('Obserwuj')")
 			if err != nil {
 				return eris.Wrap(err, "failed to query 'Follow' buttons")
 			}
@@ -283,11 +283,12 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 			if err := userCells[rand.Intn(len(userCells))].Click(); err != nil {
 				return eris.Wrap(err, "failed to click on a random user cell")
 			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
-			buttons, err = x.Page.QuerySelectorAll("button:has-text('Obserwujących')")
+			time.Sleep(2*time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+			buttons, err = x.Page.QuerySelectorAll("*:text-is('Obserwujących')")
 			if err != nil {
 				return eris.Wrap(err, "failed to query 'Followers' buttons")
 			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
 			if len(buttons) == 0 {
 				return fmt.Errorf("no 'Followers' buttons found on the user page")
 			}
