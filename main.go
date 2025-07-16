@@ -51,6 +51,9 @@ func main() {
 	}
 
 	toUnsub := max(0, following-followers+(rand.Intn(200)*followers/1000))
+	if followers < 100 {
+		toUnsub = 0
+	}
 	fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
 
 	if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
