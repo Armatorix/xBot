@@ -170,21 +170,6 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	for i := 0; i < n; i++ {
 		fmt.Println("Unsubscribing from follower", i+1)
 
-		// randomly refresh page
-		if rand.Intn(40) < 2 { // 2.5% chance to refresh
-			if _, err := x.Page.Reload(); err != nil {
-				return err
-			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to reload
-		}
-
-		if rand.Intn(20) < 2 { // 10% chance to scroll down
-			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
-				return err
-			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the scroll to complete
-		}
-
 		// system press keyboard
 		// find second button with thex Obserwujesz text
 		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwujesz')")
@@ -193,6 +178,9 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		if len(buttons) < 2 {
 			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed from all")
+			if err := x.RefreshPage(); err != nil {
+				return err
+			}
 			i--
 			continue
 		}
@@ -213,7 +201,17 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 
-		if rand.Intn(20) < 2 { // 10% chance to click on a random link
+		// randomly refresh page
+		if rand.Intn(40) < 2 { // 2.5% chance to refresh
+			if err = x.RefreshPage(); err != nil {
+				return err
+			}
+		} else if rand.Intn(20) < 2 { // 10% chance to scroll down
+			if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight)"); err != nil {
+				return err
+			}
+			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the scroll to complete
+		} else if rand.Intn(20) < 2 { // 10% chance to click on a random link
 			links, err := x.Page.QuerySelectorAll("a")
 			if err != nil {
 				return err
@@ -231,8 +229,24 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
 			}
 		}
+
 	}
 
+	return nil
+}
+
+func (x *XWalker) RefreshPage() error {
+	if _, err := x.Page.Reload(); err != nil {
+		return err
+	}
+	time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+	// Wait for the page to reload
+	if err := x.Page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
+		State: playwright.LoadStateDomcontentloaded,
+	}); err != nil {
+		return err
+	}
+	fmt.Println("Page reloaded successfully")
 	return nil
 }
 
