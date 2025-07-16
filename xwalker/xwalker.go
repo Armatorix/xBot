@@ -172,8 +172,9 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 			return err
 		}
 		if len(buttons) < 2 {
-			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed from all")
-			if err := x.RefreshPage(); err != nil {
+			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
+			if err := x.OpenFollowersPage(); err != nil {
+				fmt.Println("Error reopening followers page:", err)
 				return err
 			}
 			i--
