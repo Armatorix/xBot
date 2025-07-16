@@ -14,12 +14,12 @@ import (
 func loginFromCookiesFile(username string) (*XWalker, error) {
 	f, err := os.ReadFile(username + "_cookies.txt")
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to read cookies file")
 	}
 
 	cookiez := strings.Split(string(f), "; ")
 	if len(cookiez) == 0 || (len(cookiez) == 1 && cookiez[0] == "") {
-		return nil, fmt.Errorf("no cookies found in file")
+		return nil, fmt.Errorf("no valid cookies found in file %s", username+"_cookies.txt")
 	}
 
 	var cookies []playwright.OptionalCookie
@@ -29,7 +29,7 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 		}
 		parts := strings.SplitN(cookie, "=", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid cookie format: %s", cookie)
+			return nil, eris.Errorf("invalid cookie format: %s", cookie)
 		}
 		name := parts[0]
 		value := parts[1]
@@ -41,14 +41,14 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 	}
 	pw, err := playwright.Run()
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to start Playwright")
 	}
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(false),
 		Timeout:  playwright.Float(0), // Set a timeout for launching the browser
 	})
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to launch browser")
 	}
 	context, err := browser.NewContext(playwright.BrowserNewContextOptions{
 		StorageState: &playwright.OptionalStorageState{
@@ -56,11 +56,11 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to create new browser context with cookies")
 	}
 	page, err := context.NewPage()
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "failed to create new page in browser context")
 	}
 	page.SetDefaultTimeout(0) // Disable timeout for page operations
 	// goto page and check if logged in
