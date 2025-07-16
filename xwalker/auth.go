@@ -98,7 +98,7 @@ func loginX(email, pass, user string) (*XWalker, error) {
 	}
 
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
+		Headless: playwright.Bool(true),
 	})
 	if err != nil {
 		return nil, err
