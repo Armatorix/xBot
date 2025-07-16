@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Email    string `env:"EMAIL"`
 	Password string `env:"PASSWORD"`
-	User     string `env:"USER"`
+	User     string `env:"USERNAME"`
 }
 
 func main() {
@@ -22,12 +22,17 @@ func main() {
 		return
 	}
 	playwright.Install()
-	xd, err := xwalker.LoginFromCookiesFile()
+	xd, err := xwalker.LoginFromCookiesFile(cfg.User)
 	if err != nil {
 		fmt.Println("No cookies file found, logging in with credentials", err)
 	}
 	if xd == nil {
-		xd, err = xwalker.LoginX("dummy.alertz@gmail.com", "#oTZg6VweLY9psVzkXPy", "polski_wojt")
+		xd, err = xwalker.LoginX(cfg.Email, cfg.Password, cfg.User)
+		if err != nil {
+			panic(err)
+		}
+
+		err = xd.StoreCookiesToFile()
 		if err != nil {
 			panic(err)
 		}
@@ -38,8 +43,8 @@ func main() {
 
 	xd.RefuseAllCookies()
 
-	xd.FollowUnfollowedFromHash("#pociągPrawych", 20)
-	xd.OpenFollowersPageAndUnsubN(10)
+	// xd.FollowUnfollowedFromHash("#pociągPrawych", 20)
+	xd.OpenFollowersPageAndUnsubN(50)
 	err = xd.StoreCookiesToFile()
 	if err != nil {
 		panic(err)

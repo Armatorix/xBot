@@ -14,10 +14,11 @@ import (
 type XWalker struct {
 	Playwright *playwright.Playwright
 	Page       playwright.Page
+	Username   string
 }
 
-func LoginFromCookiesFile() (*XWalker, error) {
-	f, err := os.ReadFile("cookies.txt")
+func LoginFromCookiesFile(username string) (*XWalker, error) {
+	f, err := os.ReadFile(username + "_cookies.txt")
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,7 @@ func LoginFromCookiesFile() (*XWalker, error) {
 	page.SetDefaultTimeout(0) // Disable timeout for page operations
 	// goto page and check if logged in
 	return &XWalker{
+		Username:   username,
 		Playwright: pw,
 		Page:       page,
 	}, nil
@@ -148,12 +150,13 @@ func LoginX(email, pass, user string) (*XWalker, error) {
 	return &XWalker{
 		Playwright: pw,
 		Page:       page,
+		Username:   user,
 	}, nil
 }
 
 func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	// Navigate to the followers page
-	if _, err := x.Page.Goto("https://x.com/polski_wojt/following"); err != nil {
+	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/following"); err != nil {
 		return err
 	}
 
@@ -210,7 +213,7 @@ func (x *XWalker) StoreCookiesToFile() error {
 		cookieData += fmt.Sprintf("%s=%s; ", cookie.Name, cookie.Value)
 	}
 
-	f, err := os.Create("cookies.txt")
+	f, err := os.Create(x.Username + "_cookies.txt")
 	if err != nil {
 		return err
 	}
