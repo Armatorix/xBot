@@ -60,9 +60,6 @@ deploy-restart-service:
 	@ssh ${SSHADDR} "sudo systemctl start ${BOT_NAME}.timer || true"
 	@ssh ${SSHADDR} "sudo systemctl daemon-reload"
 	@ssh ${SSHADDR} "sudo systemctl restart ${BOT_NAME}.service || true"
-	@ssh ${SSHADDR} "sudo systemctl status ${BOT_NAME}.service || true"
-	@ssh ${SSHADDR} "sudo systemctl status ${BOT_NAME}.timer || true
-	@ssh ${SSHADDR} "sudo journalctl -u ${BOT_NAME}.service --no-pager --no-full --lines=100 || true"
 
 .PHONY: deploy-envs
 deploy-envs:
