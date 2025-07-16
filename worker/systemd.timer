@@ -2,6 +2,8 @@
 Description=Worker trigger
 
 [Timer]
+OnUnitActiveSec=1h
+OnBootSec=10min
 OnCalendar=hourly
 Persistent=true
 
