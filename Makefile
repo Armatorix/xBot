@@ -1,5 +1,6 @@
+XBOT_USERNAME=polski_wojt
+# XBOT_USERNAME=Armatorix
 SSHADDR=ax@hephaestus
-XBOT_USERNAME=Armatorix
 SHELL:=/bin/bash
 BOT_NAME=xbot-worker-${XBOT_USERNAME}
 APP_PATH=~/${BOT_NAME}
