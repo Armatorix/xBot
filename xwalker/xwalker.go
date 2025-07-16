@@ -194,7 +194,12 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		if unfollowButtons, err := x.Page.QuerySelectorAll("button:has-text('Przestań obserwować')"); err != nil {
 			return err
 		} else if len(unfollowButtons) == 0 {
-			return nil // No "Przestań obserwować" button found, maybe already unfollowed
+			fmt.Println("No 'Przestań obserwować' button found, maybe already unsubscribed or not present")
+			if err := x.RefreshPage(); err != nil {
+				return err
+			}
+			i--
+			continue
 		}
 		if err := x.Page.Click("button:has-text('Przestań obserwować')"); err != nil {
 			return err
