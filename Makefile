@@ -11,6 +11,12 @@ run:
 	@echo "Running xBot..."
 	@source .env && go run main.go
 
+.PHONY: install-playwright-driver
+install-playwright-driver:
+	@echo "Installing Playwright driver..."
+	@ssh ${SSHADDR} ""
+	@ssh ${SSHADDR} "playwright install chromium"
+
 .PHONY: build
 build:
 	@echo "Building xBot..."
@@ -26,8 +32,9 @@ prepare-user:
 deploy-systemd-config:
 	@echo "Building xBot systemd config..."
 	scp ./worker/systemd.config ${SSHADDR}:${APP_PATH}/systemd.config
-	@ssh ${SSHADDR} "sed -i 's|PATH_TO_SCRIPT|${HOME}/xbot|g' ${HOME}/${BOT_NAME}/systemd.config"
-	@ssh ${SSHADDR} "sed -i 's|PATH_TO_ENV|${HOME}/.env|g' ${HOME}/${BOT_NAME}/systemd.config"
+	@ssh ${SSHADDR} "sed -i 's|PATH_TO_SCRIPT|${HOME}/${BOT_NAME}/xbot|g' ${HOME}/${BOT_NAME}/systemd.config"
+	@ssh ${SSHADDR} "sed -i 's|PATH_TO_ENV|${HOME}/${BOT_NAME}/.env|g' ${HOME}/${BOT_NAME}/systemd.config"
+	@ssh ${SSHADDR} "sed -i 's|WORKDIR|${HOME}/${BOT_NAME}|g' ${HOME}/${BOT_NAME}/systemd.config"
 	@ssh ${SSHADDR} "sudo mv ${APP_PATH}/systemd.config ${WORKER_SYSTEMD_CONFIG_PATH}"
 	@ssh ${SSHADDR} "sudo chown root:root ${WORKER_SYSTEMD_CONFIG_PATH}"
 	@ssh ${SSHADDR} "sudo chmod 777 ${WORKER_SYSTEMD_CONFIG_PATH}"
@@ -52,11 +59,15 @@ deploy-restart-service:
 	@ssh ${SSHADDR} "sudo systemctl enable ${BOT_NAME}.timer"
 	@ssh ${SSHADDR} "sudo systemctl start ${BOT_NAME}.timer || true"
 	@ssh ${SSHADDR} "sudo systemctl daemon-reload"
+	@ssh ${SSHADDR} "sudo systemctl restart ${BOT_NAME}.service || true"
+	@ssh ${SSHADDR} "sudo systemctl status ${BOT_NAME}.service || true"
+	@ssh ${SSHADDR} "sudo systemctl status ${BOT_NAME}.timer || true
+	@ssh ${SSHADDR} "sudo journalctl -u ${BOT_NAME}.service --no-pager --no-full --lines=100 || true"
 
 .PHONY: deploy-envs
 deploy-envs:
 	@echo "Deploying .env file to ${SSHADDR}..."
-	@scp .env ${SSHADDR}:${APP_PATH}/.env
+	@scp .env.${XBOT_USERNAME} ${SSHADDR}:${APP_PATH}/.env
 	@ssh ${SSHADDR} "chmod 644 ${APP_PATH}/.env"
 
 
