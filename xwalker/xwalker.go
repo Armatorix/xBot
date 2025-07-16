@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -266,6 +267,19 @@ func (x *XWalker) OpenFollowersPage() error {
 	return nil
 }
 
+func (x *XWalker) OpenProfilePage() error {
+	if _, err := x.Page.Goto("https://x.com/" + x.Username); err != nil {
+		return err
+	}
+	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond)
+	// Check if the page is loaded by looking for the profile header
+	if _, err := x.Page.WaitForSelector("h1:has-text('" + x.Username + "')"); err != nil {
+		return fmt.Errorf("profile page did not load correctly: %w", err)
+	}
+	fmt.Println("Profile page opened successfully")
+	return nil
+}
+
 // TODO: handle if at some point the page changes, restart the process few times - then notify me
 
 func (x *XWalker) StoreCookiesToFile() error {
@@ -356,4 +370,55 @@ func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
 	}
 
 	return nil
+}
+
+func (x *XWalker) FollowerAndFollowing() (int, int, error) {
+	// Navigate to the followers page
+	if err := x.OpenProfilePage(); err != nil {
+		return 0, 0, fmt.Errorf("error opening followers page: %w", err)
+	}
+
+	// find <a> to /{username}/following
+	followingLink, err := x.Page.QuerySelector("a[href='/" + x.Username + "/following']")
+	if err != nil {
+		return 0, 0, fmt.Errorf("error finding following link: %w", err)
+	}
+	// Get the text content of the following link
+	followingText, err := followingLink.TextContent()
+	if err != nil {
+		return 0, 0, fmt.Errorf("error getting following text: %w", err)
+	}
+	// Extract the number of following from the text
+	parts := strings.Split(followingText, " ")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("unexpected following text format: %s", followingText)
+	}
+
+	following, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf("error converting following count to integer: %w", err)
+	}
+
+	// find <a> to /{username}/verified_followers
+	followersLink, err := x.Page.QuerySelector("a[href='/" + x.Username + "/verified_followers']")
+	if err != nil {
+		return 0, 0, fmt.Errorf("error finding followers link: %w", err)
+	}
+	// Get the text content of the followers link
+	followersText, err := followersLink.TextContent()
+	if err != nil {
+		return 0, 0, fmt.Errorf("error getting followers text: %w", err)
+	}
+	// Extract the number of followers from the text
+	parts = strings.Split(followersText, " ")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("unexpected followers text format: %s", followersText)
+	}
+
+	followers, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf("error converting followers count to integer: %w", err)
+	}
+
+	return followers, following, nil
 }

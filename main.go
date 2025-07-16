@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/Armatorix/xBot/xwalker"
 	"github.com/caarlos0/env/v11"
@@ -43,10 +44,19 @@ func main() {
 
 	xd.RefuseAllCookies()
 
-	// xd.FollowUnfollowedFromHash("#pociągPrawych", 20)
-	if err = xd.OpenFollowersPageAndUnsubN(2400); err != nil {
+	followers, following, err := xd.FollowerAndFollowing()
+	if err != nil {
+		fmt.Println("Error getting followers and following:", err)
+		return
+	}
+
+	toUnsub := min(0, followers-following+rand.Intn(100)*following/10)
+	fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
+
+	if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
 		fmt.Println("Error opening followers page and unsubscribing:", err)
 	}
+
 	err = xd.StoreCookiesToFile()
 	if err != nil {
 		panic(err)
