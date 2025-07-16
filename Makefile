@@ -47,6 +47,7 @@ deploy-binary:
 .PHONY: deploy-restart-service
 deploy-restart-service:
 	@echo "Restarting xBot service on ${SSHADDR}..."
+	@ssh ${SSHADDR} "sudo systemctl enable ${BOT_NAME}.service || true"
 	@ssh ${SSHADDR} "sudo systemctl stop ${BOT_NAME}.timer || true"
 	@ssh ${SSHADDR} "sudo systemctl enable ${BOT_NAME}.timer"
 	@ssh ${SSHADDR} "sudo systemctl start ${BOT_NAME}.timer || true"
