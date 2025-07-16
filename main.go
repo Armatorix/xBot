@@ -32,6 +32,12 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
+	initSleep := time.Duration(rand.Intn(15)+1) * time.Minute
+	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
+	time.Sleep(initSleep)
+	fmt.Println("xBot started")
+	// Initialize xwalker with the provided configuration
+
 	xd, err := xwalker.LoadOrLoginX(cfg.Email, cfg.Password, cfg.User)
 	if err != nil {
 		fmt.Printf("Error loading or logging in to xwalker: %v\n", err)
