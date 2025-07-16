@@ -37,7 +37,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	initSleep := time.Duration(rand.Intn(1)) * time.Minute
+	initSleep := time.Duration(rand.Intn(12)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
 	time.Sleep(initSleep)
 	fmt.Println("xBot started")
