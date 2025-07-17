@@ -2,9 +2,9 @@
 Description=Worker trigger
 
 [Timer]
-OnUnitActiveSec=1h
+OnUnitActiveSec=30h
 OnBootSec=10min
-OnCalendar=*:0/15
+OnCalendar=*:0/30
 Persistent=true
 
 [Install]

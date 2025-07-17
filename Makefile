@@ -74,3 +74,7 @@ deploy-envs:
 .PHONY: worker-deploy
 worker-deploy:prepare-user build deploy-systemd-config deploy-binary deploy-envs deploy-restart-service
 
+.all:
+all:
+	$(MAKE) worker-deploy XBOT_USERNAME=polski_wojt
+	$(MAKE) worker-deploy XBOT_USERNAME=Armatorix

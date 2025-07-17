@@ -22,12 +22,20 @@ type Config struct {
 
 func main() {
 	now := time.Now()
+	// timezone warsaw
+	timezone, err := time.LoadLocation("Europe/Warsaw")
+	if err != nil {
+		fmt.Printf("Error loading timezone: %v\n", err)
+		timezone = time.UTC
+	}
+	now = now.In(timezone)
+	fmt.Println("Current time in Warsaw:", now.Format("15:04:05"))
 	if now.Hour() < 6 || now.Hour() > 23 {
 		fmt.Println("xBot is not allowed to run at this hour. Please try again later.")
 		return
 	}
 	var cfg Config
-	err := env.Parse(&cfg)
+	err = env.Parse(&cfg)
 	if err != nil {
 		fmt.Printf("Error parsing environment variables: %v\n", err)
 		return
