@@ -82,7 +82,7 @@ func main() {
 	}
 
 	if now.Hour() >= cfg.SubFromHour && now.Hour() <= cfg.SubToHour {
-		toFollow := 3 + rand.Intn(8)
+		toFollow := 10 + rand.Intn(20)
 
 		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
 		if err != nil {
