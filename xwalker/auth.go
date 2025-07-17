@@ -195,3 +195,13 @@ func (x *XWalker) StoreCookiesToFile() error {
 	}
 	return nil
 }
+
+func (x *XWalker) Logout() {
+	x.Page.Goto("https://x.com/logout")
+	time.Sleep(2*time.Second + time.Second*time.Duration(rand.Intn(5)))
+	x.Page.Click("button:has-text('Wyloguj się')") // Click the logout button
+	time.Sleep(2*time.Second + time.Second*time.Duration(rand.Intn(5)))
+	os.Remove(x.Username + "_cookies.txt") // Remove the cookies file
+	fmt.Println("Logged out and cookies file removed.")
+	return
+}

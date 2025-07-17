@@ -65,6 +65,7 @@ func main() {
 	followers, following, err := xd.FollowerAndFollowing()
 	if err != nil {
 		fmt.Println("Error getting followers and following:", err)
+		xd.Logout()
 		return
 	}
 
