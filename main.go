@@ -45,7 +45,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	initSleep := time.Duration(rand.Intn(4)) * time.Minute
+	initSleep := time.Duration(rand.Intn(10)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
 	time.Sleep(initSleep)
 	fmt.Println("xBot started")
@@ -71,11 +71,13 @@ func main() {
 	fmt.Println("Followers:", followers)
 	fmt.Println("Following:", following)
 
-	if now.Hour() == cfg.MassUnsubHour {
+	{
+		// unsub
 		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100))
 		if followers < 100 {
 			toUnsub = 0
 		}
+		toUnsub = min(toUnsub, rand.Intn(10)+2)
 		fmt.Println("To unsubscribe:", toUnsub)
 
 		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
