@@ -84,3 +84,4 @@ worker-deploy:prepare-user build deploy-systemd-config deploy-binary deploy-envs
 all:
 	$(MAKE) worker-deploy XBOT_USERNAME=polski_wojt
 	$(MAKE) worker-deploy XBOT_USERNAME=Armatorix
+	$(MAKE) worker-deploy XBOT_USERNAME=KarolKKubiec
