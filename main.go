@@ -68,13 +68,15 @@ func main() {
 		xd.Logout()
 		return
 	}
+	fmt.Println("Followers:", followers)
+	fmt.Println("Following:", following)
 
 	if now.Hour() == cfg.MassUnsubHour {
 		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100))
 		if followers < 100 {
 			toUnsub = 0
 		}
-		fmt.Println("Followers:", followers, "Following:", following, "To unsubscribe:", toUnsub)
+		fmt.Println("To unsubscribe:", toUnsub)
 
 		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
 			fmt.Println("Error opening followers page and unsubscribing:", err)
