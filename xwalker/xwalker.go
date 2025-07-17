@@ -117,53 +117,6 @@ func (x *XWalker) RefuseAllCookies() {
 	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the action to complete
 }
 
-func (x *XWalker) FollowUnfollowedFromHash(hash string, n int) error {
-	q := url.QueryEscape(hash) // Ensure the hashtag is URL-encoded
-	_, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=hashtag_click&f=user", q))
-	if err != nil {
-		return eris.Wrap(err, "failed to go to hashtag page")
-	}
-
-	// Wait for the page to load and display the users
-	if _, err := x.Page.WaitForSelector("button:has-text('Follow')"); err != nil {
-		return eris.Wrap(err, "failed to wait for users to load on hashtag page")
-	}
-
-	totalFollowed := 0
-	queryAttempts := 0
-	// Find all "Follow" buttons
-	// Follow the first n users
-	for {
-		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the follow action to complete
-		buttons, err := x.Page.QuerySelectorAll("button:has-text('Follow')")
-		if err != nil {
-			return eris.Wrap(err, "failed to query 'Follow' buttons")
-		}
-		if len(buttons) == 0 {
-			if err := x.scrollDown(); err != nil {
-				return eris.Wrap(err, "failed to scroll down to find more 'Follow' buttons")
-			}
-			queryAttempts++
-			if queryAttempts > 5 {
-				return fmt.Errorf("no more 'Follow' buttons found after scrolling down multiple times")
-			}
-			continue
-		}
-
-		// Click the first "Follow" button
-		if err := buttons[0].Click(); err != nil {
-			return eris.Wrap(err, "failed to click 'Follow' button")
-		}
-
-		totalFollowed++
-		if totalFollowed >= n {
-			break // Stop if we've followed enough users
-		}
-	}
-
-	return nil
-}
-
 func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 	// Navigate to the followers page
 	if err := x.openProfilePage(); err != nil {

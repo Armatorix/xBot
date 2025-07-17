@@ -10,6 +10,7 @@ WORKER_SYSTEMD_TIMER_PATH=/etc/systemd/system/${BOT_NAME}.timer
 run:
 # run with .env, source .env and run go main
 	@echo "Running xBot..."
+	@cat .env.${XBOT_USERNAME} | sed 's/^/export /' > .env
 	@source .env && go run main.go
 
 .PHONY: install-playwright-driver
