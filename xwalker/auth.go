@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	headless = true // Set to false if you want to see the browser actions
+	headless = false // Set to false if you want to see the browser actions
 )
 
 func loginFromCookiesFile(username string) (*XWalker, error) {
