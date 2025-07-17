@@ -25,6 +25,12 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		return eris.Wrap(err, "failed to open followers page")
 	}
 
+	for range rand.Intn(3) + 1 {
+		if err := x.scrollDownX(400); err != nil {
+			return eris.Wrap(err, "failed to scroll down on followers page")
+		}
+	}
+
 	// Unsubscribe from the first n followers
 	for i := 0; i < n; i++ {
 		fmt.Println("Unsubscribing from follower", i+1)
@@ -45,7 +51,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 			continue
 		}
 		// Click the second "Obserwujesz" button
-		if err := buttons[1].Click(); err != nil {
+		if err := buttons[rand.Intn(len(buttons))].Click(); err != nil {
 			return eris.Wrap(err, "failed to click 'Obserwujesz' button")
 		}
 		time.Sleep(time.Second*1 + time.Duration(rand.Intn(340))*time.Millisecond) // Wait for the unfollow action to complete
