@@ -45,7 +45,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	initSleep := time.Duration(rand.Intn(10)) * time.Minute
+	initSleep := time.Duration(rand.Intn(7)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
 	time.Sleep(initSleep)
 	fmt.Println("xBot started")
@@ -73,8 +73,8 @@ func main() {
 
 	{
 		// unsub
-		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100))
-		toUnsub = min(toUnsub, rand.Intn(10)+2)
+		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100)) + (24 - now.Hour())
+		toUnsub = min(toUnsub, 30)
 		if followers < 100 {
 			toUnsub = 0
 		}
