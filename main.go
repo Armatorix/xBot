@@ -73,7 +73,7 @@ func main() {
 
 	{
 		// unsub
-		toUnsub := 24 + rand.Intn(6) - now.Hour()
+		toUnsub := (24-now.Hour())/2 + rand.Intn(2)
 		if followers < 250 || followers < following {
 			toUnsub = 0
 		}
@@ -85,7 +85,7 @@ func main() {
 	}
 
 	if now.Hour() >= cfg.SubFromHour && now.Hour() <= cfg.SubToHour {
-		toFollow := 10 + rand.Intn(20)
+		toFollow := 10 + rand.Intn(10)
 
 		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
 		if err != nil {
