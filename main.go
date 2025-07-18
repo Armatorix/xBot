@@ -73,8 +73,10 @@ func main() {
 
 	{
 		// unsub
-		toUnsub := max(0, following-followers+(rand.Intn(4)*followers/100)) + (24 - now.Hour())
-		toUnsub = min(toUnsub, 30)
+		toUnsub := 24 + rand.Intn(6) - now.Hour()
+		if followers < 250 || followers < following {
+			toUnsub = 0
+		}
 		fmt.Println("To unsubscribe:", toUnsub)
 
 		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
