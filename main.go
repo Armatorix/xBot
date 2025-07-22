@@ -10,6 +10,8 @@ import (
 	"github.com/playwright-community/playwright-go"
 )
 
+// TODO:  handle "Nie możesz obecnie obserwować więcej osób."
+// NOTE: stop sub immidietly
 type Config struct {
 	Email         string   `env:"EMAIL"`
 	Password      string   `env:"PASSWORD"`
