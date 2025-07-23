@@ -2,10 +2,8 @@ package xwalker
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/playwright-community/playwright-go"
 	"github.com/rotisserie/eris"
@@ -144,7 +142,7 @@ func loginX(email, pass, user string) (*XWalker, error) {
 		return nil, err
 	}
 
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the next page to load
+	sleep2N(2) // Wait for the next page to load
 	// check page contains "There was unusual login activity on your account."
 	if cont, _ := page.Content(); strings.Contains(cont, "There was unusual login activity on your account.") {
 		// fill username again
@@ -155,14 +153,14 @@ func loginX(email, pass, user string) (*XWalker, error) {
 		if err := page.Click("button:has-text('Next')"); err != nil {
 			return nil, eris.Wrap(err, "failed to click 'Next' button after unusual login activity")
 		}
-		time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond)
+		sleep2N(1)
 	}
 	// Wait for the password field to appear
 	if _, err = page.WaitForSelector("input[name='password']"); err != nil {
 		return nil, eris.Wrap(err, "failed to find password input field")
 	}
 
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the next page to load
+	sleep2N(2) // Wait for the next page to load
 	if err := page.Fill("input[name='password']", pass); err != nil {
 		return nil, eris.Wrap(err, "failed to fill password field")
 	}
@@ -171,7 +169,8 @@ func loginX(email, pass, user string) (*XWalker, error) {
 	if err := page.Click("button:has-text('Log in')"); err != nil {
 		return nil, eris.Wrap(err, "failed to click 'Log in' button")
 	}
-	time.Sleep(2*time.Second + time.Duration(rand.Intn(10))*time.Millisecond) // Wait for the login to complete
+
+	sleep2N(2) // Wait for the login to complete
 	return &XWalker{
 		Playwright: pw,
 		Page:       page,
@@ -205,9 +204,10 @@ func (x *XWalker) StoreCookiesToFile() error {
 
 func (x *XWalker) Logout() {
 	x.Page.Goto("https://x.com/logout")
-	time.Sleep(2*time.Second + time.Second*time.Duration(rand.Intn(5)))
+	sleep2N(4)
 	x.Page.Click("button:has-text('Wyloguj się')") // Click the logout button
-	time.Sleep(2*time.Second + time.Second*time.Duration(rand.Intn(5)))
+
+	sleep2N(4)
 	os.Remove(x.Username + "_cookies.txt") // Remove the cookies file
 	fmt.Println("Logged out and cookies file removed.")
 	return

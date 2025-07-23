@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/playwright-community/playwright-go"
 	"github.com/rotisserie/eris"
@@ -54,7 +53,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		if err := buttons[rand.Intn(len(buttons))].Click(); err != nil {
 			return eris.Wrap(err, "failed to click 'Obserwujesz' button")
 		}
-		time.Sleep(time.Second*1 + time.Duration(rand.Intn(340))*time.Millisecond) // Wait for the unfollow action to complete
+		sleep2N(1) // Wait for the unfollow action to complete
 		// Click the "Przestań obserwować" button in the confirmation dialog
 		// Check if has text "Przestań obserwować"
 		if unfollowButtons, err := x.Page.QuerySelectorAll("button:has-text('Przestań obserwować')"); err != nil {
@@ -70,8 +69,8 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		if err := x.Page.Click("button:has-text('Przestań obserwować')"); err != nil {
 			return eris.Wrap(err, "failed to click 'Przestań obserwować' button")
 		}
-		time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait
 
+		sleep2N(1)
 		if rand.Intn(20) < 2 { // 10% chance to scroll down
 			if err := x.scrollDown(); err != nil {
 				return eris.Wrap(err, "failed to scroll down after unsubscribing")
@@ -86,12 +85,12 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 				if err := links[randomIndex].Click(); err != nil {
 					return eris.Wrap(err, "failed to click on a random link")
 				}
-				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the click to complete
+				sleep2N(2) // Wait for the click to complete
 				// Go back to the followers page
 				if _, err := x.Page.GoBack(); err != nil {
 					return eris.Wrap(err, "failed to go back after clicking a random link")
 				}
-				time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+				sleep2N(3) // Wait for the page to load
 				// if page is not followers page, go to the followers page again
 				if err := x.openFollowingPage(); err != nil {
 					fmt.Println("Error reopening followers page:", err)
@@ -107,6 +106,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 
 func (x *XWalker) RefuseAllCookies() {
 	x.Page.Goto("https://x.com")
+	sleep2N(4) // Wait for the page to load
 	// Click the "Refuse" button for cookies if it exists
 	ls, err := x.Page.Locator("button:has-text('Refuse non-essential cookies')").All()
 	if err != nil {
@@ -120,7 +120,7 @@ func (x *XWalker) RefuseAllCookies() {
 	fmt.Println("Refusing non-essential cookies")
 	if err := x.Page.Click("button:has-text('Refuse non-essential cookies')"); err != nil {
 	}
-	time.Sleep(time.Second + time.Duration(rand.Intn(150))*time.Millisecond) // Wait for the action to complete
+	sleep2N(2) // Wait for the action to complete
 }
 
 func (x *XWalker) FollowerAndFollowing() (int, int, error) {
@@ -205,7 +205,7 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 	}
 
 	for totalFollowed < n {
-		time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+		sleep2N(3)
 
 		buttons, err := x.Page.QuerySelectorAll("button div span span:text-is('Obserwuj')")
 		if err != nil {
@@ -242,12 +242,12 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 			if err := userCells[rand.Intn(len(userCells))].Click(); err != nil {
 				return eris.Wrap(err, "failed to click on a random user cell")
 			}
-			time.Sleep(2*time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+			sleep2N(3) // Wait for the page to load
 			buttons, err = x.Page.QuerySelectorAll("*:text-is('Obserwujących')")
 			if err != nil {
 				return eris.Wrap(err, "failed to query 'Followers' buttons")
 			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond) // Wait for the page to load
+			sleep2N(2) // Wait for the page to load
 			if len(buttons) == 0 {
 				return fmt.Errorf("no 'Followers' buttons found on the user page")
 			}
@@ -255,7 +255,7 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 			if err := buttons[0].Click(); err != nil {
 				return eris.Wrap(err, "failed to click on 'Followers' button")
 			}
-			time.Sleep(time.Second + time.Duration(rand.Intn(350))*time.Millisecond)
+			sleep2N(1)
 			continue
 		}
 
