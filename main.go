@@ -13,13 +13,11 @@ import (
 // TODO:  handle "Nie możesz obecnie obserwować więcej osób."
 // NOTE: stop sub immidietly
 type Config struct {
-	Email         string   `env:"EMAIL"`
-	Password      string   `env:"PASSWORD"`
-	User          string   `env:"USERNAME"`
-	Tags          []string `env:"TAGS"`
-	SubFromHour   int      `env:"SUB_FROM_HOUR"`
-	SubToHour     int      `env:"SUB_TO_HOUR"`
-	MassUnsubHour int      `env:"MASS_UNSUB_HOUR"`
+	Email    string   `env:"EMAIL"`
+	Password string   `env:"PASSWORD"`
+	User     string   `env:"USERNAME"`
+	Tags     []string `env:"TAGS"`
+	Localdev bool     `env:"LOCALDEV" envDefault:"false"`
 }
 
 func main() {
@@ -32,14 +30,14 @@ func main() {
 	}
 	now = now.In(timezone)
 	fmt.Println("Current time in Warsaw:", now.Format("15:04:05"))
-	if now.Hour() < 6 || now.Hour() > 23 {
-		fmt.Println("xBot is not allowed to run at this hour. Please try again later.")
-		return
-	}
 	var cfg Config
 	err = env.Parse(&cfg)
 	if err != nil {
 		fmt.Printf("Error parsing environment variables: %v\n", err)
+		return
+	}
+	if !cfg.Localdev && (now.Hour() < 6 || now.Hour() > 23) {
+		fmt.Println("xBot is not allowed to run at this hour. Please try again later.")
 		return
 	}
 	err = playwright.Install()
@@ -49,8 +47,12 @@ func main() {
 
 	initSleep := time.Duration(rand.Intn(7)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
-	time.Sleep(initSleep)
-	fmt.Println("xBot started")
+	if cfg.Localdev {
+		fmt.Println("Running in localdev mode")
+	} else {
+		time.Sleep(initSleep)
+		fmt.Println("xBot started")
+	}
 	// Initialize xwalker with the provided configuration
 
 	xd, err := xwalker.LoadOrLoginX(cfg.Email, cfg.Password, cfg.User)
@@ -86,7 +88,8 @@ func main() {
 		}
 	}
 
-	if now.Hour() >= cfg.SubFromHour && now.Hour() <= cfg.SubToHour {
+	{
+		// mass sub
 		toFollow := 10 + rand.Intn(10)
 
 		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])

@@ -80,7 +80,14 @@ func LoadOrLoginX(email, pass, user string) (*XWalker, error) {
 	if err != nil {
 		fmt.Println("No cookies file found, logging in with credentials", err)
 	}
-	if xd == nil {
+
+	if xd != nil {
+		if _, err := xd.Page.Goto("https://x.com"); err != nil {
+			return nil, eris.Wrap(err, "failed to go to x.com")
+		}
+		// TODO: wait for load state and check if user logged with cookies
+
+	} else {
 		xd, err = loginX(email, pass, user)
 		if err != nil {
 			return nil, eris.Wrap(err, "failed to login with credentials")

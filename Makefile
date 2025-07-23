@@ -11,6 +11,7 @@ run:
 # run with .env, source .env and run go main
 	@echo "Running xBot..."
 	@cat .env.${XBOT_USERNAME} | sed 's/^/export /' > .env
+	@echo -e "\nexport LOCALDEV=true" >> .env
 	@sed -i "s/\"/'/g" .env
 	@source .env && go run main.go
 
