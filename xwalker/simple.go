@@ -33,10 +33,15 @@ func (x *XWalker) openProfilePage() error {
 }
 
 func (x *XWalker) scrollDownX(v int) error {
+	// make gradual scroll down
+	if v < 0 {
+		return fmt.Errorf("scroll value must be non-negative, got %d", v)
+	}
+
 	if _, err := x.Page.Evaluate("window.scrollTo(0, document.body.scrollHeight+" + strconv.Itoa(rand.Intn(100)+v) + ")"); err != nil {
 		return eris.Wrap(err, "failed to scroll down the page")
 	}
-	sleep2N(1)
+	sleep2N(2)
 	fmt.Println("Scrolled down successfully")
 	return nil
 }

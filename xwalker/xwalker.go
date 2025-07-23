@@ -25,7 +25,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 	}
 
 	for range rand.Intn(3) + 1 {
-		if err := x.scrollDownX(400); err != nil {
+		if err := x.scrollDownX(600); err != nil {
 			return eris.Wrap(err, "failed to scroll down on followers page")
 		}
 	}

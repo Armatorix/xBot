@@ -77,7 +77,7 @@ func main() {
 
 	{
 		// unsub
-		toUnsub := (24-now.Hour())/2 + rand.Intn(2)
+		toUnsub := (24-now.Hour())/3 + rand.Intn(3)
 		if followers < 250 {
 			fmt.Println("Not enough followers to unsubscribe, setting to 0")
 			toUnsub = 0
@@ -95,7 +95,7 @@ func main() {
 
 	{
 		// mass sub
-		toFollow := 10 + rand.Intn(10)
+		toFollow := 10 + rand.Intn(6)
 
 		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
 		if err != nil {
