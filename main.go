@@ -82,7 +82,7 @@ func main() {
 			fmt.Println("Not enough followers to unsubscribe, setting to 0")
 			toUnsub = 0
 		}
-		if followers > following {
+		if int(float64(followers)*1.1) > following {
 			fmt.Println("Less followers than following, setting to 0")
 			toUnsub = 0
 		}
