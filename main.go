@@ -78,7 +78,12 @@ func main() {
 	{
 		// unsub
 		toUnsub := (24-now.Hour())/2 + rand.Intn(2)
-		if followers < 250 || followers < following {
+		if followers < 250 {
+			fmt.Println("Not enough followers to unsubscribe, setting to 0")
+			toUnsub = 0
+		}
+		if followers > following {
+			fmt.Println("Less followers than following, setting to 0")
 			toUnsub = 0
 		}
 		fmt.Println("To unsubscribe:", toUnsub)
