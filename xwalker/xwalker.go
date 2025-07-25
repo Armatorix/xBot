@@ -263,6 +263,9 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 		if err := buttons[rand.Intn(len(buttons))].Click(); err != nil {
 			return eris.Wrap(err, "failed to click 'Follow' button")
 		}
+		if x.hasFollowLimitsReachedNote() {
+			return fmt.Errorf("follow limits reached")
+		}
 
 		totalFollowed++
 		fmt.Println("Followed", totalFollowed, "users from tag:", tag)

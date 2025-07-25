@@ -84,3 +84,30 @@ func sleep2N(n int) {
 			time.Duration(rand.Intn(1000))*time.Millisecond,
 	)
 }
+
+func (x *XWalker) hasFollowLimitsReachedNote() bool {
+	// check for span with text Nie możesz obecnie obserwować więcej osób.
+	count, err := x.Page.Locator("span:has-text('Nie możesz obecnie obserwować więcej osób.')").Count()
+	if err != nil {
+		fmt.Println("Error checking for follow limits reached note:", err)
+		return false // Assume no limits reached if there's an error
+	}
+	if count >= 1 {
+		fmt.Println("Follow limits reached note found")
+		return true // Limits reached note found
+	}
+	// sleep
+	// check
+	sleep2N(1)
+	count, err = x.Page.Locator("span:has-text('Nie możesz obecnie obserwować więcej osób.')").Count()
+	if err != nil {
+		fmt.Println("Error checking for follow limits reached note:", err)
+		return false // Assume no limits reached if there's an error
+	}
+	if count >= 1 {
+		fmt.Println("Follow limits reached note found after sleep")
+		return true // Limits reached note found
+	}
+	fmt.Println("No follow limits reached note found")
+	return false // No limits reached note found
+}

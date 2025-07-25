@@ -93,7 +93,6 @@ func main() {
 		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
 		if err != nil {
 			fmt.Println("Error following from tag:", err)
-			return
 		}
 	}
 
