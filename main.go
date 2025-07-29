@@ -38,6 +38,10 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
+	if rand.Float64() < 0.1 {
+		fmt.Println("Randomly skipping xBot execution")
+		return
+	}
 	initSleep := time.Duration(rand.Intn(7)) * time.Minute
 	fmt.Println("Starting xBot...\n Starting in", initSleep, "minutes")
 	if cfg.Localdev {
