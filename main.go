@@ -79,7 +79,7 @@ func main() {
 		// toUnsub = -toUnsub + 4 + rand.Intn(4)
 		// toUnsub = max(toUnsub, 0)
 		toUnsub := rand.Intn(4)
-		if followers < 250 {
+		if followers < 1000 {
 			fmt.Println("Not enough followers to unsubscribe, setting to 0")
 			toUnsub = 0
 		}
