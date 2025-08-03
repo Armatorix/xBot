@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Armatorix/xBot/x/xrand"
 	"github.com/playwright-community/playwright-go"
 	"github.com/rotisserie/eris"
 )
@@ -188,7 +189,7 @@ func (x *XWalker) FollowerAndFollowing() (int, int, error) {
 // follow users from a tag,
 // if there is no users to follow, open a random user from the tag, then open their followers page
 // and then do the same thing
-func (x *XWalker) FollowFromTag(n int, tag string) error {
+func (x *XWalker) FollowUsersFromTag(n int, tag string) error {
 	totalFollowed := 0
 	if n <= 0 {
 		return fmt.Errorf("number of users to follow must be greater than 0")
@@ -269,6 +270,93 @@ func (x *XWalker) FollowFromTag(n int, tag string) error {
 
 		totalFollowed++
 		fmt.Println("Followed", totalFollowed, "users from tag:", tag)
+	}
+
+	return nil
+}
+
+// follow users from a tag,
+// if there is no users to follow, open a random user from the tag, then open their followers page
+// and then do the same thing
+func (x *XWalker) FollowRepostersFromTag(n int, tag string) error {
+	totalFollowed := 0
+	if n <= 0 {
+		return fmt.Errorf("number of users to follow must be greater than 0")
+	}
+
+	fmt.Println("Following", n, "users from tag:", tag)
+	if _, err := x.Page.Goto(fmt.Sprintf("https://x.com/search?q=%s&src=typed_query", url.QueryEscape(tag))); err != nil {
+		return eris.Wrap(err, "failed to go to tag page")
+	}
+
+	// Wait for the page to load and display the users
+	if _, err := x.Page.WaitForSelector("article[data-testid='tweet']"); err != nil {
+		return eris.Wrap(err, "failed to wait for users to load on tag page")
+	}
+
+	// query elements "article" with with test-id="tweet"
+	articles, err := x.Page.QuerySelectorAll("article[data-testid='tweet']")
+	if err != nil {
+		return eris.Wrap(err, "failed to query 'Follow' buttons")
+	}
+	// open first article
+	if len(articles) == 0 {
+		return fmt.Errorf("no articles found on the tag page")
+	}
+
+	if err := articles[0].Click(); err != nil {
+		return eris.Wrap(err, "failed to click on the first article")
+	}
+	sleep2N(3) // Wait for the page to load
+
+	gotoUrl, err := x.FromPostToRetweets()
+	if err != nil {
+		return eris.Wrap(err, "failed to get retweets URL from post")
+	}
+
+	fmt.Println("Going to retweets page:", gotoUrl)
+	if _, err := x.Page.Goto(gotoUrl); err != nil {
+		return eris.Wrap(err, "failed to go to retweets page")
+	}
+
+	sleep2N(3)
+	// Wait for the retweets page to load
+	if _, err := x.Page.WaitForSelector("button:has-text('Obserwuj')"); err != nil {
+		return eris.Wrap(err, "failed to wait for retweets page to load")
+	}
+
+	failedAttempts := 0
+	for totalFollowed < n {
+		sleep2N(1)
+
+		// with test-id="*-follow"
+		buttons, err := x.Page.QuerySelectorAll("button:text-is('Obserwuj')")
+		if err != nil {
+			return eris.Wrap(err, "failed to query 'Follow' buttons")
+		}
+
+		if len(buttons) != 0 {
+			if err := xrand.SliceElement(buttons).Click(); err != nil {
+				return eris.Wrap(err, "failed to click 'Follow' button")
+			}
+			failedAttempts = 0 // Reset failed attempts after a successful follow
+			totalFollowed++
+			sleep2N(1) // Wait for the follow action to complete
+			fmt.Println("Followed", totalFollowed, "users from tag:", tag)
+		} else if len(buttons) == 0 {
+			failedAttempts++
+			fmt.Println("Still no 'Follow' buttons found, maybe already followed or not present")
+			if err := x.scrollDownX(300); err != nil {
+				return eris.Wrap(err, "failed to scroll down after not finding 'Follow' buttons")
+			}
+		}
+
+		if failedAttempts >= 5 {
+			return fmt.Errorf("too many failed attempts to find 'Follow' buttons, stopping")
+		}
+		if x.hasFollowLimitsReachedNote() {
+			return fmt.Errorf("follow limits reached")
+		}
 	}
 
 	return nil

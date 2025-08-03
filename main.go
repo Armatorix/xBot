@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/Armatorix/xBot/x/xrand"
 	"github.com/Armatorix/xBot/xwalker"
 	"github.com/caarlos0/env/v11"
 	"github.com/playwright-community/playwright-go"
@@ -72,7 +73,7 @@ func main() {
 	fmt.Println("Followers:", followers)
 	fmt.Println("Following:", following)
 
-	{
+	if false {
 		// unsub
 		// toUnsub := (now.Hour()/4 - 1)
 		// toUnsub *= toUnsub
@@ -100,7 +101,7 @@ func main() {
 		toFollow *= toFollow
 		toFollow += rand.Intn(4)
 
-		err := xd.FollowFromTag(toFollow, cfg.Tags[rand.Intn(len(cfg.Tags))])
+		err := xd.FollowRepostersFromTag(toFollow, xrand.SliceElement(cfg.Tags))
 		if err != nil {
 			fmt.Println("Error following from tag:", err)
 		}

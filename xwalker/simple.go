@@ -23,7 +23,7 @@ func (x *XWalker) openProfilePage() error {
 	if _, err := x.Page.Goto("https://x.com/" + x.Username); err != nil {
 		return eris.Wrap(err, "failed to go to profile page")
 	}
-	sleep2N(1)
+	sleep2N(3)
 	// Check if the page is loaded by looking for the profile header
 	if _, err := x.Page.WaitForSelector("div:has-text('" + x.Username + "')"); err != nil {
 		return fmt.Errorf("profile page did not load correctly: %w", err)
