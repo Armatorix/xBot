@@ -108,7 +108,7 @@ func followCount(i int) int {
 	}
 	toFollow := (i/4 - 1)
 	toFollow *= toFollow
-	toFollow += rand.Intn(8)
+	toFollow += rand.Intn(4)
 	return max(toFollow, 0)
 }
 
