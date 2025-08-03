@@ -28,7 +28,7 @@ func TestFollowCount(t *testing.T) {
 
 func TestUnfollowCount(t *testing.T) {
 	total := 0
-	for i := 0; i < 48; i++ {
+	for i := range 48 {
 		count := unfollowCount(i/2, 500, 1000) // Example values for followers and following
 		total += count
 		fmt.Printf("Hour: %d, Unfollow Count: %d\n", i/2, count)
