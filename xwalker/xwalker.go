@@ -289,6 +289,8 @@ func (x *XWalker) FollowRepostersFromTag(n int, tag string) error {
 		return eris.Wrap(err, "failed to go to tag page")
 	}
 
+	sleep2N(3)
+
 	// Wait for the page to load and display the users
 	if _, err := x.Page.WaitForSelector("article[data-testid='tweet']"); err != nil {
 		return eris.Wrap(err, "failed to wait for users to load on tag page")
