@@ -77,8 +77,12 @@ func main() {
 		toUnsub := unfollowCount(now.Hour(), followers, following)
 		fmt.Println("To unsubscribe:", toUnsub)
 
-		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
+		if err = xd.OpenFollowersPageAndUnsubN(toUnsub / 2); err != nil {
 			fmt.Println("Error opening followers page and unsubscribing:", err)
+		}
+
+		if err = xd.OpenFollowingPageAndUnsubN(toUnsub / 2); err != nil {
+			fmt.Println("Error opening following page and unsubscribing:", err)
 		}
 	}
 

@@ -52,12 +52,15 @@ func (x *XWalker) openFollowingPage() error {
 		return eris.Wrap(err, "failed to go to followers page")
 	}
 
+	sleep2N(1) // Wait for the page to load
 	// Wait for the followers list to load
-	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
+	if _, err := x.Page.WaitForSelector("*:has-text('Obserwujesz')"); err != nil {
 		return eris.Wrap(err, "failed to wait for followers list to load")
 	}
-	sleep2N(1) // Wait for the page to load
-
+	// if page contains "Coś poszło nie tak" then return error
+	if elems, err := x.Page.QuerySelectorAll("text=Coś poszło nie tak"); err == nil && len(elems) > 0 {
+		return fmt.Errorf("something went wrong while loading the followers page")
+	}
 	return nil
 }
 func (x *XWalker) openFollowersPage() error {
@@ -67,10 +70,15 @@ func (x *XWalker) openFollowersPage() error {
 	}
 
 	// Wait for the followers list to load
-	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
+	if _, err := x.Page.WaitForSelector("*:has-text('Obserwujesz')"); err != nil {
 		return eris.Wrap(err, "failed to wait for followers list to load")
 	}
 	sleep2N(1) // Wait for the page to load
+
+	// if page contains "Coś poszło nie tak" then return error
+	if elems, err := x.Page.QuerySelectorAll("text=Coś poszło nie tak"); err == nil && len(elems) > 0 {
+		return fmt.Errorf("something went wrong while loading the followers page")
+	}
 
 	return nil
 }

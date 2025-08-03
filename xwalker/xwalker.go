@@ -26,7 +26,6 @@ func (x *XWalker) OpenFollowingPageAndUnsubN(n int) error {
 }
 
 func (x *XWalker) openPageAndUnsubN(n int, pageOpener func() error) error {
-
 	// Navigate to the followers page
 	if err := pageOpener(); err != nil {
 		fmt.Println("Error opening followers page:", err)
@@ -49,17 +48,29 @@ func (x *XWalker) openPageAndUnsubN(n int, pageOpener func() error) error {
 		if err != nil {
 			return eris.Wrap(err, "failed to query 'Obserwujesz' buttons")
 		}
-		if len(buttons) < 2 {
-			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
-			if err := pageOpener(); err != nil {
-				fmt.Println("Error reopening followers page:", err)
-				return eris.Wrap(err, "failed to reopen followers page after not finding 'Obserwujesz' buttons")
+		if len(buttons) == 0 {
+			fmt.Println("No 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
+			for range 7 {
+				// scroll down to load more followers
+				if err := x.scrollDownX(600); err != nil {
+					return eris.Wrap(err, "failed to scroll down after not finding 'Obserwujesz' buttons")
+				}
+
+				buttons, err = x.Page.QuerySelectorAll("button[data-testid$='-unfollow']")
+				if err != nil {
+					return eris.Wrap(err, "failed to query 'Obserwujesz' buttons after scrolling down")
+				}
+				if len(buttons) != 0 {
+					break
+				}
 			}
-			i--
-			continue
+			if len(buttons) == 0 {
+				return fmt.Errorf("no 'Obserwujesz' buttons found after scrolling down, stopping")
+			}
 		}
+
 		// Click the second "Obserwujesz" button
-		if err := buttons[rand.Intn(len(buttons))].Click(); err != nil {
+		if err := xrand.SliceElement(buttons).Click(); err != nil {
 			return eris.Wrap(err, "failed to click 'Obserwujesz' button")
 		}
 		sleep2N(1) // Wait for the unfollow action to complete
