@@ -39,7 +39,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	if rand.Float64() < 0.1 {
+	if rand.Float64() < 0.05 {
 		fmt.Println("Randomly skipping xBot execution")
 		return
 	}
