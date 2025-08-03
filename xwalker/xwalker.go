@@ -314,26 +314,23 @@ func (x *XWalker) FollowRepostersFromTag(n int, tag string) error {
 		return eris.Wrap(err, "failed to get retweets URL from post")
 	}
 
-	fmt.Println("Going to retweets page:", gotoUrl)
 	if _, err := x.Page.Goto(gotoUrl); err != nil {
 		return eris.Wrap(err, "failed to go to retweets page")
 	}
 
-	sleep2N(3)
-	// Wait for the retweets page to load
-	if _, err := x.Page.WaitForSelector("button:has-text('Obserwuj')"); err != nil {
-		return eris.Wrap(err, "failed to wait for retweets page to load")
-	}
+	sleep2N(4)
 
 	failedAttempts := 0
 	for totalFollowed < n {
 		sleep2N(1)
 
 		// with test-id="*-follow"
-		buttons, err := x.Page.QuerySelectorAll("button:text-is('Obserwuj')")
+		buttons, err := x.Page.QuerySelectorAll("button[data-testid$='-follow']")
 		if err != nil {
 			return eris.Wrap(err, "failed to query 'Follow' buttons")
 		}
+
+		fmt.Println("Found", len(buttons), "'Follow' buttons on the retweets page")
 
 		if len(buttons) != 0 {
 			if err := xrand.SliceElement(buttons).Click(); err != nil {
