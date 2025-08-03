@@ -108,6 +108,5 @@ func (x *XWalker) hasFollowLimitsReachedNote() bool {
 		fmt.Println("Follow limits reached note found after sleep")
 		return true // Limits reached note found
 	}
-	fmt.Println("No follow limits reached note found")
 	return false // No limits reached note found
 }
