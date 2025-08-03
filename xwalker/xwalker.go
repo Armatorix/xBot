@@ -45,7 +45,7 @@ func (x *XWalker) openPageAndUnsubN(n int, pageOpener func() error) error {
 
 		// system press keyboard
 		// find second button with thex Obserwujesz text
-		buttons, err := x.Page.QuerySelectorAll("button:has-text('Obserwujesz')")
+		buttons, err := x.Page.QuerySelectorAll("button[data-testid$='-unfollow']")
 		if err != nil {
 			return eris.Wrap(err, "failed to query 'Obserwujesz' buttons")
 		}

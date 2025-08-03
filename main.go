@@ -39,7 +39,7 @@ func main() {
 		fmt.Printf("Error installing Playwright: %v\n ; continue", err)
 	}
 
-	if rand.Float64() < 0.05 {
+	if rand.Float64() < 0.02 {
 		fmt.Println("Randomly skipping xBot execution")
 		return
 	}
@@ -116,7 +116,7 @@ func unfollowCount(i int, followers, following int) int {
 	if followers < 200 {
 		toUnsub = 0
 	}
-	if int(float64(followers)*1.1) > following {
+	if followers > int(float64(following)*1.1) {
 		toUnsub = 0
 	}
 	return toUnsub
