@@ -19,8 +19,16 @@ type XWalker struct {
 }
 
 func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
+	return x.openPageAndUnsubN(n, x.openFollowersPage)
+}
+func (x *XWalker) OpenFollowingPageAndUnsubN(n int) error {
+	return x.openPageAndUnsubN(n, x.openFollowingPage)
+}
+
+func (x *XWalker) openPageAndUnsubN(n int, pageOpener func() error) error {
+
 	// Navigate to the followers page
-	if err := x.openFollowingPage(); err != nil {
+	if err := pageOpener(); err != nil {
 		fmt.Println("Error opening followers page:", err)
 		return eris.Wrap(err, "failed to open followers page")
 	}
@@ -43,7 +51,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 		}
 		if len(buttons) < 2 {
 			fmt.Println("Not enough 'Obserwujesz' buttons found, maybe already unsubscribed or not present")
-			if err := x.openFollowingPage(); err != nil {
+			if err := pageOpener(); err != nil {
 				fmt.Println("Error reopening followers page:", err)
 				return eris.Wrap(err, "failed to reopen followers page after not finding 'Obserwujesz' buttons")
 			}
@@ -93,7 +101,7 @@ func (x *XWalker) OpenFollowersPageAndUnsubN(n int) error {
 				}
 				sleep2N(3) // Wait for the page to load
 				// if page is not followers page, go to the followers page again
-				if err := x.openFollowingPage(); err != nil {
+				if err := pageOpener(); err != nil {
 					fmt.Println("Error reopening followers page:", err)
 					return eris.Wrap(err, "failed to reopen followers page after clicking a random link")
 				}

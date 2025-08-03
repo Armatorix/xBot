@@ -60,6 +60,20 @@ func (x *XWalker) openFollowingPage() error {
 
 	return nil
 }
+func (x *XWalker) openFollowersPage() error {
+	// Navigate to the followers page
+	if _, err := x.Page.Goto("https://x.com/" + x.Username + "/followers"); err != nil {
+		return eris.Wrap(err, "failed to go to followers page")
+	}
+
+	// Wait for the followers list to load
+	if _, err := x.Page.WaitForSelector("button:has-text('Obserwujesz')"); err != nil {
+		return eris.Wrap(err, "failed to wait for followers list to load")
+	}
+	sleep2N(1) // Wait for the page to load
+
+	return nil
+}
 
 func (x *XWalker) refreshPage() error {
 	if _, err := x.Page.Reload(); err != nil {
