@@ -25,3 +25,24 @@ func TestFollowCount(t *testing.T) {
 		t.Error("Total follow count exceeds expected limit")
 	}
 }
+
+func TestUnfollowCount(t *testing.T) {
+	total := 0
+	for i := 0; i < 48; i++ {
+		count := unfollowCount(i/2, 500, 1000) // Example values for followers and following
+		total += count
+		fmt.Printf("Hour: %d, Unfollow Count: %d\n", i/2, count)
+		if count < 0 {
+			t.Errorf("Unfollow count should not be negative, got %d for hour %d", count, i)
+		}
+	}
+
+	fmt.Printf("Total unfollow count over 24 hours: %d\n", total)
+	if total < 0 {
+		t.Error("Total unfollow count should not be negative")
+	}
+	// as it is run twice a hour
+	if total > 200 { // Arbitrary limit for testing purposes
+		t.Error("Total unfollow count exceeds expected limit")
+	}
+}

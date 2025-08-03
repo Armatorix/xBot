@@ -74,20 +74,7 @@ func main() {
 	fmt.Println("Following:", following)
 
 	if false {
-		// unsub
-		// toUnsub := (now.Hour()/4 - 1)
-		// toUnsub *= toUnsub
-		// toUnsub = -toUnsub + 4 + rand.Intn(4)
-		// toUnsub = max(toUnsub, 0)
-		toUnsub := rand.Intn(4)
-		if followers < 1000 {
-			fmt.Println("Not enough followers to unsubscribe, setting to 0")
-			toUnsub = 0
-		}
-		if int(float64(followers)*1.1) > following {
-			fmt.Println("Less followers than following, setting to 0")
-			toUnsub = 0
-		}
+		toUnsub := unfollowCount(now.Hour(), followers, following)
 		fmt.Println("To unsubscribe:", toUnsub)
 
 		if err = xd.OpenFollowersPageAndUnsubN(toUnsub); err != nil {
@@ -119,4 +106,18 @@ func followCount(i int) int {
 	toFollow *= toFollow
 	toFollow += rand.Intn(8)
 	return max(toFollow, 0)
+}
+
+func unfollowCount(i int, followers, following int) int {
+	if i < 6 || i > 23 {
+		return 0
+	}
+	toUnsub := rand.Intn(4)
+	if followers < 400 {
+		toUnsub = 0
+	}
+	if int(float64(followers)*1.1) > following {
+		toUnsub = 0
+	}
+	return toUnsub
 }
