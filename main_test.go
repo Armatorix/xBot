@@ -42,7 +42,7 @@ func TestUnfollowCount(t *testing.T) {
 		t.Error("Total unfollow count should not be negative")
 	}
 	// as it is run twice a hour
-	if total > 200 { // Arbitrary limit for testing purposes
+	if total > 400 { // Arbitrary limit for testing purposes
 		t.Error("Total unfollow count exceeds expected limit")
 	}
 }

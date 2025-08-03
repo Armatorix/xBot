@@ -112,8 +112,8 @@ func unfollowCount(i int, followers, following int) int {
 	if i < 6 || i > 23 {
 		return 0
 	}
-	toUnsub := rand.Intn(4)
-	if followers < 400 {
+	toUnsub := i/4 + rand.Intn(15)
+	if followers < 200 {
 		toUnsub = 0
 	}
 	if int(float64(followers)*1.1) > following {
