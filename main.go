@@ -73,7 +73,7 @@ func main() {
 	fmt.Println("Followers:", followers)
 	fmt.Println("Following:", following)
 
-	if false {
+	{
 		toUnsub := unfollowCount(now.Hour(), followers, following)
 		fmt.Println("To unsubscribe:", toUnsub)
 
