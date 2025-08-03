@@ -13,7 +13,7 @@ run:
 	@cat .env.${XBOT_USERNAME} | sed 's/^/export /' > .env
 	@echo -e "\nexport LOCALDEV=true" >> .env
 	@sed -i "s/\"/'/g" .env
-	@source .env && go run main.go
+	@source .env && go run main.go config.go
 
 .PHONY: install-playwright-driver
 install-playwright-driver:
