@@ -8,7 +8,7 @@ import (
 func TestFollowCount(t *testing.T) {
 	total := 0
 	for i := 0; i < 48; i++ {
-		count := followCount(i / 2)
+		count := followCount(i/2, 200)
 		total += count
 		fmt.Printf("Hour: %d, Follow Count: %d\n", i/2, count)
 		if count < 0 {

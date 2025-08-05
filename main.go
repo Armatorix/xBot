@@ -88,7 +88,7 @@ func main() {
 
 	{
 		// mass sub
-		toFollow := followCount(now.Hour())
+		toFollow := followCount(now.Hour(), followers)
 
 		err := xd.FollowRepostersFromTag(toFollow, xrand.SliceElement(cfg.Tags))
 		if err != nil {
@@ -102,13 +102,21 @@ func main() {
 	}
 }
 
-func followCount(i int) int {
+func followCount(i int, followers int) int {
 	if i < 6 {
 		return 0
 	}
-	toFollow := (i/4 - 1)
-	toFollow *= toFollow
-	toFollow += rand.Intn(7)
+	toFollow := 0
+	switch {
+	case followers < 100:
+		toFollow = (i / 10) + rand.Intn(i)
+	case followers < 200:
+		toFollow = (i/6 - 1) + rand.Intn(i)
+	case followers < 500:
+		toFollow = (i/4 - 1) + rand.Intn(i)
+	default:
+		toFollow = (i/3 - 1) + rand.Intn(i)
+	}
 	return max(toFollow, 0)
 }
 
@@ -116,7 +124,7 @@ func unfollowCount(i int, followers, following int) int {
 	if i < 10 {
 		return 0
 	}
-	toUnsub := i/4 + rand.Intn(15)
+	toUnsub := i/4 + rand.Intn(8)
 	if followers < 200 {
 		toUnsub = 0
 	}
