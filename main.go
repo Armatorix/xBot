@@ -103,17 +103,17 @@ func main() {
 }
 
 func followCount(i int) int {
-	if i < 6 || i > 23 {
+	if i < 6 {
 		return 0
 	}
 	toFollow := (i/4 - 1)
 	toFollow *= toFollow
-	toFollow += rand.Intn(4)
+	toFollow += rand.Intn(7)
 	return max(toFollow, 0)
 }
 
 func unfollowCount(i int, followers, following int) int {
-	if i < 6 || i > 23 {
+	if i < 10 {
 		return 0
 	}
 	toUnsub := i/4 + rand.Intn(15)
