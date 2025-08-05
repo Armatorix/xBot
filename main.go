@@ -103,33 +103,38 @@ func main() {
 }
 
 func followCount(i int, followers int) int {
-	if i < 6 {
-		return 0
+	if i < 7 {
+		return 0 // No following in the first 7 hours
 	}
-	toFollow := 0
 	switch {
 	case followers < 100:
-		toFollow = (i / 10) + rand.Intn(i)
+		return (i / 10) + rand.Intn(i+1)
 	case followers < 200:
-		toFollow = (i/6 - 1) + rand.Intn(i)
+		return (i / 6) + rand.Intn(i+1)
 	case followers < 500:
-		toFollow = (i/4 - 1) + rand.Intn(i)
+		return (i / 4) + rand.Intn(i+1)
 	default:
-		toFollow = (i/3 - 1) + rand.Intn(i)
+		return (i / 3) + rand.Intn(i+1)
 	}
-	return max(toFollow, 0)
 }
 
 func unfollowCount(i int, followers, following int) int {
-	if i < 10 {
-		return 0
+	if i < 7 {
+		return 0 // No unfollowing in the first 7 hours
 	}
-	toUnsub := i/4 + rand.Intn(8)
-	if followers < 200 {
-		toUnsub = 0
+	switch {
+	case followers > 2500:
+		return 400 / (48 - 7*2)
+	case followers < 100:
+		return (i / 10) + rand.Intn(i+1)/2
+	case followers < 200:
+		return (i / 6) + rand.Intn(i+1)/2
+	case followers < 500:
+		return (i / 4) + rand.Intn(i+1)/2
+	case following < 1000:
+		return (i / 3) + rand.Intn(i+1)/2
+	default:
+		return (i / 2) + rand.Intn(i+1)/2
+
 	}
-	if followers > int(float64(following)*1.1) {
-		toUnsub = 0
-	}
-	return toUnsub
 }
