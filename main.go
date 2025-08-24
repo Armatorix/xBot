@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -15,6 +16,9 @@ import (
 // NOTE: stop sub immidietly
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
+
 	now := time.Now()
 	// timezone warsaw
 	timezone, err := time.LoadLocation("Europe/Warsaw")
@@ -53,7 +57,7 @@ func main() {
 	}
 	// Initialize xwalker with the provided configuration
 
-	xd, err := xwalker.LoadOrLoginX(cfg.Email, cfg.Password, cfg.User)
+	xd, err := xwalker.LoadOrLoginX(ctx, cfg.Email, cfg.Password, cfg.User)
 	if err != nil {
 		fmt.Printf("Error loading or logging in to xwalker: %v\n", err)
 		return
@@ -100,6 +104,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func followCount(i int, followers int) int {

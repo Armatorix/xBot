@@ -1,6 +1,7 @@
 package xwalker
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -11,9 +12,11 @@ import (
 
 var (
 	headless = false // Set to false if you want to see the browser actions
+	// 30 minutes as milliseconds
+	timeout = float64(30 * 60 * 1000)
 )
 
-func loginFromCookiesFile(username string) (*XWalker, error) {
+func loginFromCookiesFile(ctx context.Context, username string) (*XWalker, error) {
 	f, err := os.ReadFile(username + "_cookies.txt")
 	if err != nil {
 		return nil, eris.Wrap(err, "failed to read cookies file")
@@ -45,9 +48,10 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 	if err != nil {
 		return nil, eris.Wrap(err, "failed to start Playwright")
 	}
+
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(headless),
-		Timeout:  playwright.Float(0), // Set a timeout for launching the browser
+		Timeout:  playwright.Float(timeout), // Set a timeout for launching the browser
 	})
 	if err != nil {
 		return nil, eris.Wrap(err, "failed to launch browser")
@@ -64,7 +68,7 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 	if err != nil {
 		return nil, eris.Wrap(err, "failed to create new page in browser context")
 	}
-	page.SetDefaultTimeout(0) // Disable timeout for page operations
+	page.SetDefaultTimeout(timeout) // Disable timeout for page operations
 	// goto page and check if logged in
 	return &XWalker{
 		Username:   username,
@@ -73,8 +77,8 @@ func loginFromCookiesFile(username string) (*XWalker, error) {
 	}, nil
 }
 
-func LoadOrLoginX(email, pass, user string) (*XWalker, error) {
-	xd, err := loginFromCookiesFile(user)
+func LoadOrLoginX(ctx context.Context, email, pass, user string) (*XWalker, error) {
+	xd, err := loginFromCookiesFile(ctx, user)
 	if err != nil {
 		fmt.Println("No cookies file found, logging in with credentials", err)
 	}
@@ -86,7 +90,7 @@ func LoadOrLoginX(email, pass, user string) (*XWalker, error) {
 		// TODO: wait for load state and check if user logged with cookies
 
 	} else {
-		xd, err = loginX(email, pass, user)
+		xd, err = loginX(ctx, email, pass, user)
 		if err != nil {
 			return nil, eris.Wrap(err, "failed to login with credentials")
 		}
@@ -100,7 +104,7 @@ func LoadOrLoginX(email, pass, user string) (*XWalker, error) {
 
 }
 
-func loginX(email, pass, user string) (*XWalker, error) {
+func loginX(ctx context.Context, email, pass, user string) (*XWalker, error) {
 	pw, err := playwright.Run()
 	if err != nil {
 		return nil, err
@@ -117,13 +121,13 @@ func loginX(email, pass, user string) (*XWalker, error) {
 	if err != nil {
 		return nil, err
 	}
-	context.SetDefaultTimeout(0)
+	context.SetDefaultTimeout(timeout)
 
 	page, err := context.NewPage()
 	if err != nil {
 		return nil, err
 	}
-	page.SetDefaultTimeout(0) // Disable timeout for page operations
+	page.SetDefaultTimeout(timeout) // Disable timeout for page operations
 	_, err = page.Goto("https://x.com/i/flow/login")
 	if err != nil {
 		return nil, err
