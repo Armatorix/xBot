@@ -77,7 +77,7 @@ func main() {
 	fmt.Println("Followers:", followers)
 	fmt.Println("Following:", following)
 
-	{
+	if now.Day() > 15 {
 		toUnsub := unfollowCount(now.Hour(), followers, following)
 		fmt.Println("To unsubscribe:", toUnsub)
 
@@ -88,6 +88,8 @@ func main() {
 		if err = xd.OpenFollowingPageAndUnsubN(toUnsub / 2); err != nil {
 			fmt.Println("Error opening following page and unsubscribing:", err)
 		}
+	} else {
+		fmt.Println("Skipping unsubscription, it's not after the 15th.")
 	}
 
 	{
