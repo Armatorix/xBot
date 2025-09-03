@@ -129,6 +129,12 @@ func unfollowCount(i int, followers, following int) int {
 	if i < 7 {
 		return 0 // No unfollowing in the first 7 hours
 	}
+
+	// do not unfollow if has 10% of following
+	if followers > following*10 {
+		return 0
+	}
+
 	switch {
 	case followers > 2500:
 		return 400 / (48 - 7*2)
