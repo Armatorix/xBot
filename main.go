@@ -77,7 +77,7 @@ func main() {
 	fmt.Println("Followers:", followers)
 	fmt.Println("Following:", following)
 
-	if now.Day() > 15 {
+	if now.Day() > 26 {
 		toUnsub := unfollowCount(now.Hour(), followers, following)
 		fmt.Println("To unsubscribe:", toUnsub)
 
