@@ -5,5 +5,6 @@ type Config struct {
 	Password string   `env:"PASSWORD"`
 	User     string   `env:"USERNAME"`
 	Tags     []string `env:"TAGS"`
+	Cooldown bool     `env:"COOLDOWN" envDefault:"false"`
 	Localdev bool     `env:"LOCALDEV" envDefault:"false"`
 }
