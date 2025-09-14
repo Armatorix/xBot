@@ -92,7 +92,7 @@ func main() {
 		fmt.Println("Skipping unsubscription, it's not after the 15th.")
 	}
 
-	{
+	if !cfg.Cooldown {
 		// mass sub
 		toFollow := followCount(now.Hour(), followers)
 
