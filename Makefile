@@ -86,3 +86,4 @@ all:
 	$(MAKE) worker-deploy XBOT_USERNAME=polski_wojt
 	$(MAKE) worker-deploy XBOT_USERNAME=Armatorix
 	$(MAKE) worker-deploy XBOT_USERNAME=KarolKKubiec
+	$(MAKE) worker-deploy XBOT_USERNAME=karolcia92x
